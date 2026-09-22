@@ -10,8 +10,8 @@ from .graft import CHUNK, graft, mtp_tensors
 PE_REPO = "Comfy-Org/Qwen-Image-2.1"
 MTP_REPO = "Qwen/Qwen3.5-9B"
 PE = {
-    "edit": {"file": "qwen3.5_9b_qwen_image_2.1_pe_i2i.int8_convrot.safetensors", "prompt_repo": "Qwen/Qwen-Image-2.1-PE-I2I"},
     "t2i": {"file": "qwen3.5_9b_qwen_image_2.1_pe_t2i.int8_convrot.safetensors", "prompt_repo": "Qwen/Qwen-Image-2.1-PE-T2I"},
+    "i2i": {"file": "qwen3.5_9b_qwen_image_2.1_pe_i2i.int8_convrot.safetensors", "prompt_repo": "Qwen/Qwen-Image-2.1-PE-I2I"},
 }
 SYSTEM_PROMPTS = Path(__file__).parent / "system_prompts"
 

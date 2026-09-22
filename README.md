@@ -2,7 +2,7 @@
 
 A ready-to-use **Qwen-Image 2.1 prompt enhancer** for ComfyUI, sped up with MTP speculative decoding.
 
-- **Load Qwen-Image 2.1 PE (MTP)** — pick `edit` or `t2i`. On first run it downloads the prompt enhancer (9.5 GB, from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1/tree/main/text_encoders)) and adds the MTP head from `Qwen/Qwen3.5-9B` (~0.5 GB) in one pass. Later runs just load it.
+- **Load Qwen-Image 2.1 PE (MTP)** — pick `t2i` or `i2i`. On first run it downloads the prompt enhancer (9.5 GB, from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1/tree/main/text_encoders)) and adds the MTP head from `Qwen/Qwen3.5-9B` (~0.5 GB) in one pass. Later runs just load it.
 - **Generate Text (Qwen3.5 MTP)** — ComfyUI's Generate Text with presets for the prompt enhancer (official system prompt, thinking and sampling settings) and MTP that also works when an image is attached.
 
 ## Install
@@ -17,7 +17,7 @@ Restart ComfyUI.
 ## Use
 
 ```
-Load Qwen-Image 2.1 PE (MTP) [edit] ──clip──► Generate Text (Qwen3.5 MTP) [preset: Qwen-Image 2.1 PE (edit)]
+Load Qwen-Image 2.1 PE (MTP) [i2i] ──clip──► Generate Text (Qwen3.5 MTP) [preset: Qwen-Image 2.1 PE (i2i)]
 Load Image ─► ImageScaleToTotalPixels (1.0 MP, lanczos) ──image──┘
 ```
 
@@ -38,22 +38,22 @@ The original checkpoint is streamed straight into the prepared file and never sa
 
 The node has two outputs:
 
-- **generated_text** — the answer with the thinking removed. With a PE preset that is the JSON object (`rewritten_prompt`, `wh_ratio`, and for edit `ratio_follow`).
+- **generated_text** — the answer with the thinking removed. With a PE preset that is the JSON object (`rewritten_prompt`, `wh_ratio`, and for i2i `ratio_follow`).
 - **generated_text_with_thinking** — the full output, reasoning included, for when you want to see how the model got there.
 
 ## Presets
 
 | preset | max_length | temp | top_k | top_p | min_p | repetition | presence | thinking |
 |---|---|---|---|---|---|---|---|---|
-| Qwen-Image 2.1 PE (edit) | 24000 | 1.0 | 20 | 0.95 | 0 | 1.0 | 0 | on |
 | Qwen-Image 2.1 PE (t2i) | 16256 | 1.0 | 20 | 0.95 | 0 | 1.0 | 1.5 | on |
+| Qwen-Image 2.1 PE (i2i) | 24000 | 1.0 | 20 | 0.95 | 0 | 1.0 | 0 | on |
 | none | Generate Text's own inputs | | | | | | | |
 
 Values are the official ones from [`prompt_rewrite/pe_core.py`](https://github.com/QwenLM/Qwen-Image-2.1/tree/main/prompt_rewrite) and are editable. The official system prompt is downloaded on first use. Thinking should stay on: "both models were trained with a `<think>` block and degrade without it."
 
 ## Speed
 
-RTX 4090 Laptop, edit preset, one image:
+RTX 4090 Laptop, i2i preset, one image:
 
 | max_length | MTP off | MTP on |
 |---|---|---|

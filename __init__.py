@@ -9,8 +9,8 @@ from .pe import PE, ensure_model, system_prompt
 
 # official prompt_rewrite/pe_core.py profiles: shared sampling, per-task presence penalty and token cap
 PRESETS = {
-    "Qwen-Image 2.1 PE (edit)": {"task": "edit", "max_length": 24000, "presence_penalty": 0.0},
     "Qwen-Image 2.1 PE (t2i)": {"task": "t2i", "max_length": 16256, "presence_penalty": 1.5},
+    "Qwen-Image 2.1 PE (i2i)": {"task": "i2i", "max_length": 24000, "presence_penalty": 0.0},
 }
 
 
@@ -33,8 +33,8 @@ class TextGenerateQwen35MTP(TextGenerate):
     def define_schema(cls):
         parent = super().define_schema()
         inp = {i.id: i for i in parent.inputs}
-        presets = [io.DynamicCombo.Option("none", [inp["max_length"], inp["sampling_mode"], inp["thinking"], inp["use_default_template"]])]
-        presets += [io.DynamicCombo.Option(name, preset_inputs(p["max_length"], p["presence_penalty"])) for name, p in PRESETS.items()]
+        presets = [io.DynamicCombo.Option(name, preset_inputs(p["max_length"], p["presence_penalty"])) for name, p in PRESETS.items()]
+        presets.append(io.DynamicCombo.Option("none", [inp["max_length"], inp["sampling_mode"], inp["thinking"], inp["use_default_template"]]))
         return io.Schema(
             node_id="TextGenerateQwen35MTP",
             display_name="Generate Text (Qwen3.5 MTP)",
@@ -78,7 +78,7 @@ class LoadQwenImage21PE(io.ComfyNode):
             display_name="Load Qwen-Image 2.1 PE (MTP)",
             category="loaders",
             description="Loads the Qwen-Image 2.1 prompt enhancer with an MTP head. The first run downloads it (9.5 GB) and prepares it; later runs load it directly.",
-            inputs=[io.Combo.Input("model", options=list(PE), tooltip="edit: image-edit prompt enhancer (use with an image). t2i: text-to-image prompt enhancer.")],
+            inputs=[io.Combo.Input("model", options=list(PE), tooltip="t2i: text-to-image prompt enhancer. i2i: image-edit prompt enhancer (use with an image).")],
             outputs=[io.Clip.Output()],
         )
 
