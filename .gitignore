@@ -1,3 +1,4 @@
 *.safetensors
 system_prompts/
 __pycache__/
+docs/
