@@ -1,13 +1,13 @@
 <div align="center">
 
-# ComfyUI-QwenImage-2.1-PromptEnhancer
+# ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP
 
 **The official Qwen-Image 2.1 prompt enhancer for ComfyUI, accelerated with MTP speculative decoding.**
 
 [![ComfyUI](https://img.shields.io/badge/ComfyUI-custom%20node-blue)](https://github.com/comfyanonymous/ComfyUI)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Last commit](https://img.shields.io/github/last-commit/mozophe/ComfyUI-QwenImage-2.1-PromptEnhancer)](https://github.com/mozophe/ComfyUI-QwenImage-2.1-PromptEnhancer/commits/main)
-[![Issues](https://img.shields.io/github/issues/mozophe/ComfyUI-QwenImage-2.1-PromptEnhancer)](https://github.com/mozophe/ComfyUI-QwenImage-2.1-PromptEnhancer/issues)
+[![Last commit](https://img.shields.io/github/last-commit/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP)](https://github.com/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP/commits/main)
+[![Issues](https://img.shields.io/github/issues/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP)](https://github.com/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP/issues)
 
 [Installation](#installation) •
 [Quick start](#quick-start) •
@@ -59,13 +59,13 @@ Qwen-Image 2.1 ships two prompt enhancers (PE), Qwen3.5-9B fine-tunes that rewri
 
 ```bash
 cd ComfyUI/custom_nodes
-git clone https://github.com/mozophe/ComfyUI-QwenImage-2.1-PromptEnhancer
+git clone https://github.com/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP
 ```
 
 Optionally, install `json-repair` with ComfyUI's Python, as the official code does. It repairs answers that are nearly valid JSON; without it, every well-formed answer still parses. ComfyUI Manager installs it automatically.
 
 ```bash
-pip install -r ComfyUI-QwenImage-2.1-PromptEnhancer/requirements.txt
+pip install -r ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP/requirements.txt
 ```
 
 Restart ComfyUI.
@@ -73,7 +73,7 @@ Restart ComfyUI.
 To update:
 
 ```bash
-cd ComfyUI/custom_nodes/ComfyUI-QwenImage-2.1-PromptEnhancer
+cd ComfyUI/custom_nodes/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP
 git pull
 ```
 
@@ -82,7 +82,7 @@ git pull
 ### Image editing (i2i)
 
 ```
-Qwen-Image 2.1 PE Loader (MTP) [i2i] ──clip──► Qwen-Image 2.1 Prompt Enhancer [preset: Qwen-Image 2.1 PE (i2i)] ──positive_prompt──► your Qwen-Image 2.1 workflow
+Qwen-Image 2.1 PE Loader (MTP) [i2i] ──clip──► Qwen-Image 2.1 Prompt Enhancer (MTP) [preset: Qwen-Image 2.1 PE (i2i)] ──positive_prompt──► your Qwen-Image 2.1 workflow
 Load Image ──image_1──┘
 ```
 
@@ -110,7 +110,7 @@ Loads the prompt enhancer with an MTP head attached.
 
 On first use it downloads the checkpoint from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1/tree/main/text_encoders) (9.5 GB) and grafts on the MTP head from `Qwen/Qwen3.5-9B` (about 0.5 GB) in a single streaming pass. Later runs load the prepared file directly.
 
-### Qwen-Image 2.1 Prompt Enhancer
+### Qwen-Image 2.1 Prompt Enhancer (MTP)
 
 ComfyUI's **Generate Text** node, extended with PE presets and MTP support for image prompts.
 
@@ -158,7 +158,7 @@ These are the official values from [`prompt_rewrite/pe_core.py`](https://github.
 |---|---|---|
 | Prepared model | `ComfyUI/models/text_encoders/Qwen-Image-2.1-PE/qwen3.5_9b_qwen_image_2.1_pe_{i2i,t2i}.int8_convrot.mtp.safetensors` | 9.3 GB each |
 | In-progress download | Same folder, as `….mtp.safetensors.partial`, renamed when complete | up to 9.3 GB |
-| System prompts | `ComfyUI/custom_nodes/ComfyUI-QwenImage-2.1-PromptEnhancer/system_prompts/` | ~28 KB |
+| System prompts | `ComfyUI/custom_nodes/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP/system_prompts/` | ~28 KB |
 | Hugging Face cache | `~/.cache/huggingface/hub/` (index and prompt files only) | < 1 MB |
 
 - The original checkpoint is streamed straight into the prepared file and never stored on its own. The MTP head is held in memory only during setup.
@@ -209,7 +209,7 @@ Run the workflow again. The `.partial` file is picked up and the download resume
 <details>
 <summary><b>The node stopped working after a ComfyUI update</b></summary>
 
-This extension relies on ComfyUI internals (`Qwen35._generate_mtp`, `process_tokens`, `compute_freqs_cis`). An update to those can break it; it fails with an error rather than producing wrong output silently. Please [open an issue](https://github.com/mozophe/ComfyUI-QwenImage-2.1-PromptEnhancer/issues) with the error and your ComfyUI version.
+This extension relies on ComfyUI internals (`Qwen35._generate_mtp`, `process_tokens`, `compute_freqs_cis`). An update to those can break it; it fails with an error rather than producing wrong output silently. Please [open an issue](https://github.com/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP/issues) with the error and your ComfyUI version.
 </details>
 
 ## Development
