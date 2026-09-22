@@ -14,13 +14,14 @@ def pe_prompt(system_prompt, text, images, thinking):
     return f"<|im_start|>system\n{system_prompt}<|im_end|>\n<|im_start|>user\n{vision}{text}<|im_end|>\n<|im_start|>assistant\n{think}"
 
 
-def strip_thinking(text):
-    # the answer after the thinking block, as prompt_rewrite/pe_core.py split_thinking does
+def split_thinking(text):
+    # (thinking, answer), as prompt_rewrite/pe_core.py split_thinking does
     if "</think>" in text:
-        return text.partition("</think>")[2].strip()
-    if "<think>" in text:
-        return ""
-    return text.strip()
+        think, _, answer = text.partition("</think>")
+        return think.partition("<think>")[2].strip() if "<think>" in think else think.strip(), answer.strip()
+    if "<think>" in text:  # cut off while thinking: no answer yet
+        return text.partition("<think>")[2].strip(), ""
+    return "", text.strip()
 
 
 def mrope_table(position_ids, cap):

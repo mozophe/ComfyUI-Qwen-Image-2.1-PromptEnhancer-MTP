@@ -1,4 +1,6 @@
-# Qwen-Image 2.1 prompt enhancer: first-use setup of the MTP checkpoint and the official system prompts.
+# Qwen-Image 2.1 prompt enhancer: first-use setup of the MTP checkpoint, the official system prompts,
+# and the official prompt_rewrite handling of input images and the JSON answer.
+import json
 import logging
 import shutil
 from pathlib import Path
@@ -60,3 +62,28 @@ def system_prompt(task):
         SYSTEM_PROMPTS.mkdir(exist_ok=True)
         shutil.copyfile(hf_hub_download(PE[task]["prompt_repo"], "system_prompt.txt"), path)
     return path.read_text(encoding="utf-8")
+
+
+def fit_image(image, max_pixels=1024 * 1024):
+    # official load_image: shrink to at most 1 MP (training's IMAGE_MAX_PIXELS) keeping the aspect ratio, never enlarge
+    image = image[..., :3]
+    h, w = image.shape[1:3]
+    if w * h <= max_pixels:
+        return image
+    s = (max_pixels / (w * h)) ** 0.5
+    return comfy.utils.common_upscale(image.movedim(-1, 1), max(1, int(w * s)), max(1, int(h * s)), "lanczos", "disabled").movedim(1, -1)
+
+
+def parse_answer(answer):
+    # official parse_answer: the last JSON object in the answer that has a rewritten_prompt -> (prompt, wh_ratio, ratio_follow),
+    # None when there is none. Skips official's optional json_repair: near-JSON falls back to the raw answer.
+    decoder = json.JSONDecoder()
+    for i in reversed([i for i, c in enumerate(answer) if c == "{"]):
+        try:
+            obj = decoder.raw_decode(answer, i)[0]
+        except ValueError:
+            continue
+        text = obj.get("rewritten_prompt") or obj.get("rewrited_prompt")  # some training runs used the misspelling
+        if isinstance(text, str) and text.strip():
+            return text.strip(), str(obj.get("wh_ratio") or "").strip(), str(obj.get("ratio_follow") or "").strip()
+    return None

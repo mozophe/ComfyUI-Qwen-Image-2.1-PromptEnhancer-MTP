@@ -29,7 +29,8 @@ Qwen-Image 2.1 ships two prompt enhancers (PE), Qwen3.5-9B fine-tunes that rewri
 - **One-click setup.** The model downloads and prepares itself on first use. Downloads resume after an interruption, and existing local copies are reused.
 - **Official presets.** The system prompt, thinking mode and sampling values come from Qwen's reference implementation.
 - **MTP for image prompts.** MTP speculative decoding also works when an image is attached; core ComfyUI falls back to regular decoding in that case.
-- **Clean outputs.** The node returns the answer with the reasoning removed, and separately the full output with the reasoning included.
+- **Ready-to-use outputs.** The node parses the model's JSON answer the way the official code does and outputs each field separately: the rewritten prompt, the aspect ratio and the thinking.
+- **Multiple input images.** Up to 10 images for editing, each any size, handled as the official pipeline does: in order as `<image1>`, `<image2>`…, each shrunk to at most 1 MP.
 
 ## Table of contents
 
@@ -75,15 +76,17 @@ git pull
 ### Image editing (i2i)
 
 ```
-Qwen-Image 2.1 PE Loader (MTP) [i2i] ──clip──► Qwen-Image 2.1 Prompt Enhancer [preset: Qwen-Image 2.1 PE (i2i)]
-Load Image ─► ImageScaleToTotalPixels (1.0 MP, lanczos) ──image──┘
+Qwen-Image 2.1 PE Loader (MTP) [i2i] ──clip──► Qwen-Image 2.1 Prompt Enhancer [preset: Qwen-Image 2.1 PE (i2i)] ──positive_prompt──► your Qwen-Image 2.1 workflow
+Load Image ──image_1──┘
 ```
+
+Connect more images to `image_2`, `image_3`… for multi-image edits, and refer to them in your instruction as `<image1>`, `<image2>`…, for example *"Put the woman from `<image2>` into the street in `<image1>`"*. There's no need to resize them first.
 
 ### Text-to-image (t2i)
 
-Select `t2i` on both nodes and leave the image input unconnected.
+Select `t2i` on both nodes and leave the image inputs unconnected.
 
-Write your instruction as plain text, for example *"Make this image a realistic photo"*. The first run takes a while because it downloads and prepares the model; progress is shown on the node.
+Write your instruction as plain text, for example *"Make this image a realistic photo"*. Use the `positive_prompt` output as the prompt, and size the latent to `wh_ratio`. The first run takes a while because it downloads and prepares the model; progress is shown on the node.
 
 ## Nodes
 
@@ -109,14 +112,26 @@ ComfyUI's **Generate Text** node, extended with PE presets and MTP support for i
 |---|---|
 | `clip` | From the loader above, or any Qwen3.5 text encoder |
 | `prompt` | Your instruction, as plain text |
-| `image` / `video` / `audio` | Optional media inputs |
+| `image_1` … `image_10` | Input images, in order; the model refers to them as `<image1>`, `<image2>`…. Each can be a different size; any image over 1 MP is shrunk to 1 MP, as in the official pipeline. The i2i preset needs at least one image, and the t2i preset takes none. |
+| `video` / `audio` | Optional media inputs |
 | `preset` | A PE preset, or `none` for Generate Text's own inputs |
 | `mtp` | `auto`, `off`, or a fixed draft depth |
 
 | Output | Description |
 |---|---|
-| `generated_text` | The answer without the reasoning. With a PE preset this is a JSON object with `rewritten_prompt` and `wh_ratio`, plus `ratio_follow` for i2i. |
-| `generated_text_with_thinking` | The full output, reasoning included |
+| `positive_prompt` | The `rewritten_prompt` from the answer, ready for the text encoder. If the answer has no valid JSON, this is the whole answer and a warning is logged. |
+| `negative_prompt` | Always empty, because neither PE model writes one. It's there for workflows that expect the slot. |
+| `thinking` | The model's reasoning |
+| `wh_ratio` | The aspect ratio the model chose, such as `16:9`. Empty when the output follows an input image. |
+| `ratio_follow` | i2i only: the input image whose aspect ratio the output keeps, such as `<image1>`. Empty otherwise. |
+| `parse_ok` | `false` when the answer had no valid JSON |
+
+These are the answer fields of the official `prompt_rewrite` output record.
+
+**Image size.** Like the official PE, the node gives an aspect ratio rather than pixel dimensions; you set the size in your latent.
+
+- **t2i:** size the latent to `wh_ratio`. It's part of the rewrite, because a prompt written for a wide composition gives a different picture on a square canvas.
+- **i2i:** `ratio_follow` names the canvas image, the one whose framing the edit keeps. Connect that image as `image_1` of ComfyUI's **Text Encode Qwen Image 2.1** node, whose `latent` output matches the first reference image's size. When `ratio_follow` is empty, the model chose a new shape in `wh_ratio` instead.
 
 ## Presets
 
@@ -203,7 +218,7 @@ COMFYUI_PATH=/path/to/ComfyUI python tests/test_positions.py
 |---|---|
 | `__init__.py` | Node definitions and presets |
 | `mtp.py` | MTP decoding for image prompts (MRoPE-aware position table) |
-| `pe.py` | First-run model setup and official system prompts |
+| `pe.py` | First-run model setup, official system prompts, image resizing and answer parsing |
 | `graft.py` | Streaming safetensors grafting, free of ComfyUI imports |
 | `tools/graft_mtp.py` | Command-line wrapper around `graft.py` |
 

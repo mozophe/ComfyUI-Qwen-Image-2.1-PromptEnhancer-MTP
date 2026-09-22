@@ -1,11 +1,12 @@
 import logging
+import torch
 from typing_extensions import override
 import folder_paths
 import comfy.sd
 from comfy_api.latest import ComfyExtension, io
 from comfy_extras.nodes_textgen import TextGenerate
-from .mtp import MTPClip, pe_prompt, strip_thinking
-from .pe import PE, ensure_model, system_prompt
+from .mtp import MTPClip, pe_prompt, split_thinking
+from .pe import PE, ensure_model, fit_image, parse_answer, system_prompt
 
 # official prompt_rewrite/pe_core.py profiles: shared sampling, per-task presence penalty and token cap
 PRESETS = {
@@ -41,29 +42,56 @@ class TextGenerateQwen35MTP(TextGenerate):
             category=parent.category,
             description="Generate Text with MTP speculative decoding also for Qwen3.5 image prompts, plus official Qwen-Image 2.1 PE presets.",
             search_aliases=["LLM", "qwen", "mtp", "speculative", "prompt enhance"],
-            inputs=[inp["clip"], inp["prompt"], inp["image"], inp["video"], inp["audio"],
+            inputs=[inp["clip"], inp["prompt"],
+                    io.Autogrow.Input("images", template=io.Autogrow.TemplateNames(io.Image.Input("image"), names=[f"image_{i}" for i in range(1, 11)], min=0),
+                                      tooltip="Input images, in order: the model calls them <image1>, <image2>, ... Sizes may differ; each is shrunk to at most 1 MP."),
+                    inp["video"], inp["audio"],
                     io.DynamicCombo.Input("preset", options=presets, tooltip="PE presets add the official system prompt and sampling defaults."),
                     inp["mtp"]],
-            outputs=[io.String.Output(display_name="generated_text", tooltip="The answer, with the thinking block removed."),
-                     io.String.Output(display_name="generated_text_with_thinking", tooltip="The full output including the thinking.")],
+            # the official prompt_rewrite output record's answer fields
+            outputs=[io.String.Output("positive_prompt", display_name="positive_prompt", tooltip="The rewritten prompt from the answer's JSON, for the text encoder. The whole answer if it has none."),
+                     io.String.Output("negative_prompt", display_name="negative_prompt", tooltip="Always empty: neither PE model writes one. Kept for workflows that expect the slot."),
+                     io.String.Output("thinking", display_name="thinking", tooltip="The reasoning, without the answer."),
+                     io.String.Output("wh_ratio", display_name="wh_ratio", tooltip="The aspect ratio the model chose, e.g. 16:9. Empty when it follows an input image."),
+                     io.String.Output("ratio_follow", display_name="ratio_follow", tooltip="i2i: the input image whose aspect ratio the output keeps, e.g. <image1>. Empty otherwise."),
+                     io.Boolean.Output("parse_ok", display_name="parse_ok", tooltip="False when the answer had no valid JSON; positive_prompt is then the whole answer.")],
         )
 
     @classmethod
-    def execute(cls, clip, prompt, preset, image=None, video=None, audio=None, mtp="auto") -> io.NodeOutput:
-        text = cls.generate_text(MTPClip(clip), prompt, preset, image, video, audio, mtp)
-        return io.NodeOutput(strip_thinking(text), text)
+    def execute(cls, clip, prompt, preset, images=None, video=None, audio=None, mtp="auto") -> io.NodeOutput:
+        # connected inputs in socket order, each batch split into single images
+        images = [im[i:i + 1] for _, im in sorted((images or {}).items(), key=lambda kv: int(kv[0].rsplit("_", 1)[1])) if im is not None
+                  for i in range(im.shape[0])]
+        text = cls.generate_text(MTPClip(clip), prompt, preset, images, video, audio, mtp)
+        thinking, answer = split_thinking(text)
+        parsed = parse_answer(answer)
+        if parsed is None:
+            logging.warning("Qwen-Image 2.1 PE: the answer has no JSON rewritten_prompt; positive_prompt is the whole answer.")
+        positive, wh_ratio, ratio_follow = parsed or (answer, "", "")
+        if PRESETS.get(preset["preset"], {}).get("task") == "t2i":
+            ratio_follow = ""  # official: t2i has no ratio_follow
+        return io.NodeOutput(positive, "", thinking, wh_ratio, ratio_follow, parsed is not None)
 
     @classmethod
-    def generate_text(cls, clip, prompt, preset, image, video, audio, mtp):
+    def generate_text(cls, clip, prompt, preset, images, video, audio, mtp):
         name = preset["preset"]
         if name == "none":
-            return super().execute(clip, prompt, preset["max_length"], preset["sampling_mode"], image=image, thinking=preset.get("thinking", False),
-                                   use_default_template=preset.get("use_default_template", True), video=video, audio=audio, mtp=mtp).args[0]
+            if len({im.shape[1:] for im in images}) > 1:
+                raise ValueError("The 'none' preset takes images of one size; use a PE preset for differently sized images.")
+            return super().execute(clip, prompt, preset["max_length"], preset["sampling_mode"], image=torch.cat(images) if images else None,
+                                   thinking=preset.get("thinking", False), use_default_template=preset.get("use_default_template", True),
+                                   video=video, audio=audio, mtp=mtp).args[0]
 
+        task = PRESETS[name]["task"]
+        # official resolve_image_paths refuses these rather than run the wrong experiment
+        if task == "t2i" and images:
+            raise ValueError(f"{name} takes no images; disconnect them or use the i2i preset and model.")
+        if task == "i2i" and not images:
+            raise ValueError(f"{name} needs at least one image.")
         if not preset["thinking"]:
             logging.warning(f"{name}: thinking is off; the PE models were trained with thinking on and degrade without it.")
-        text = pe_prompt(system_prompt(PRESETS[name]["task"]), prompt, 0 if image is None else image.shape[0], preset["thinking"])
-        tokens = clip.tokenize(text, image=image, min_length=1, video=video, audio=audio)
+        text = pe_prompt(system_prompt(task), prompt, len(images), preset["thinking"])
+        tokens = clip.tokenize(text, images=[fit_image(im) for im in images], min_length=1, video=video, audio=audio)
         ids = clip.generate(tokens, do_sample=True, max_length=preset["max_length"], temperature=preset["temperature"], top_k=preset["top_k"],
                             top_p=preset["top_p"], min_p=preset["min_p"], repetition_penalty=preset["repetition_penalty"], seed=preset["seed"],
                             presence_penalty=preset["presence_penalty"], mtp=False if mtp == "off" else (True if mtp == "auto" else int(mtp)))
