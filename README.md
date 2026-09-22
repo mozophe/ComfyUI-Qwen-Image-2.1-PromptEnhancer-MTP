@@ -23,7 +23,18 @@ Load Image ─► ImageScaleToTotalPixels (1.0 MP, lanczos) ──image──┘
 
 Write your instruction as plain text ("Make this image a realistic photo"). For text-to-image, use `t2i` in both nodes and no image.
 
-The first run takes a while: it downloads and prepares the model (progress shows on the node). The download resumes if interrupted. If you already have `qwen3.5_9b_qwen_image_2.1_pe_*.int8_convrot.safetensors` in `models/text_encoders`, it is used instead of downloading. The prepared model is saved as `models/text_encoders/Qwen-Image-2.1-PE/*.mtp.safetensors`; the original isn't needed afterwards.
+The first run takes a while because it downloads and prepares the model (progress shows on the node). If the download is interrupted, it resumes. If `qwen3.5_9b_qwen_image_2.1_pe_*.int8_convrot.safetensors` is already anywhere under your `text_encoders` folders, that file is used and nothing is downloaded.
+
+### Where files go
+
+| What | Where | Size |
+|---|---|---|
+| Prepared model | `ComfyUI/models/text_encoders/Qwen-Image-2.1-PE/qwen3.5_9b_qwen_image_2.1_pe_{i2i,t2i}.int8_convrot.mtp.safetensors` | 9.3 GB each |
+| During the download | the same folder, as `….mtp.safetensors.partial`, renamed when complete | up to 9.3 GB |
+| System prompts | `ComfyUI/custom_nodes/ComfyUI-Qwen35-MTP/system_prompts/` | ~28 KB |
+| Hugging Face cache | `~/.cache/huggingface/hub/` (small index and prompt files only) | < 1 MB |
+
+The original checkpoint is streamed straight into the prepared file and never saved on its own. The MTP head is only held in memory during setup, so each model needs about 9.3 GB of disk. The folder is the first `text_encoders` path ComfyUI knows about. A prepared model already present anywhere under your `text_encoders` folders is found and reused. To free the space, delete the `.mtp.safetensors` file.
 
 The output is the model's reasoning, then `</think>`, then JSON (`rewritten_prompt`, `wh_ratio`, and for edit `ratio_follow`). To get the prompt: `Replace Text (Regex)` with pattern `(?s).*</think>\s*` and an empty replacement, then `Extract Text from JSON` with key `rewritten_prompt`.
 
@@ -44,6 +55,7 @@ RTX 4090 Laptop, edit preset, one image:
 | max_length | MTP off | MTP on |
 |---|---|---|
 | 24000 (default) | 21.3 t/s | 36.7 t/s |
+| 8192 | – | 52.9 t/s |
 | 2048 | 47.8 t/s | 72.7 t/s |
 
 Decoding gets slower the higher `max_length` is, because ComfyUI attends over the whole allocated cache. Outputs including the reasoning were 1.9k–3.3k tokens, so lowering `max_length` to ~8192 is much faster; raise it if the JSON is ever cut off. With sampling on, MTP keeps the same output quality, but a seed gives different text than with MTP off.
