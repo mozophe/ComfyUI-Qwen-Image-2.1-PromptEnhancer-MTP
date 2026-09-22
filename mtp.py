@@ -86,7 +86,7 @@ class MTPClip:
         inner = qwen35_encoder(self.clip) if mtp is not False else None
         if inner is not None and inner.transformer.mtp is None:
             logging.warning("mtp is on but this Qwen3.5 checkpoint has no MTP head, so it runs without MTP (slower). "
-                            "For Qwen-Image 2.1 PE, load it with the 'Load Qwen-Image 2.1 PE (MTP)' node.")
+                            "For Qwen-Image 2.1 PE, load it with the 'Qwen-Image 2.1 PE Loader (MTP)' node.")
             inner = None
         if inner is None or not has_image(tokens):
             return self.clip.generate(tokens, mtp=mtp, **kwargs)
