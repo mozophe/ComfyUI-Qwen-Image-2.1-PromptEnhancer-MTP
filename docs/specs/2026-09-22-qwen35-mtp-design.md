@@ -44,6 +44,29 @@ advises a `max_length` just above the expected output length.
   slice. The instance attribute is removed in a `finally`.
 - No silent fallback: if the private internals it relies on change, the error surfaces.
 
+### Presets (added after spike review)
+
+The Qwen-Image 2.1 PE checkpoints were trained with a per-task system prompt and thinking on
+(official `prompt_rewrite/README.md`: "Thinking is required: both models were trained with a
+`<think>` block and degrade without it."). ComfyUI's Qwen3.5 template sends no system prompt.
+Verified: without it output format is inconsistent; with it 6/6 runs gave valid JSON, MTP on and off.
+
+- A `preset` DynamicCombo replaces the parent's `max_length` / `sampling_mode` / `thinking` /
+  `use_default_template` inputs:
+  - `none`: exactly those parent inputs (nested), behaviour unchanged.
+  - `Qwen-Image 2.1 PE (edit)` / `Qwen-Image 2.1 PE (t2i)`: own widgets, pre-filled with the official
+    `pe_core.py` values and editable — max_length 24000 / 16256, temperature 1.0, top_k 20,
+    top_p 0.95, min_p 0.0, repetition_penalty 1.0, presence_penalty 0.0 / 1.5, seed, thinking on.
+- With a preset the node builds the official Qwen3.5 chat layout itself (prompt starting with
+  `<|im_start|>` bypasses ComfyUI's template): system prompt, user `[image blocks..., text]`,
+  `assistant\n<think>\n` (thinking on) or `assistant\n<think>\n\n</think>\n\n` (off). Thinking off
+  logs a warning, it is not refused.
+- Official prompts are under the non-commercial Qwen Research License, so they are not committed:
+  `tools/fetch_prompts.py` downloads them into `system_prompts/` (gitignored). A missing file raises
+  an error naming the tool.
+- Image downscaling to 1 MP (official `load_image`) is left to the core `ImageScaleToTotalPixels`
+  node, documented in the README.
+
 ### Tools (`tools/`)
 
 - `fetch_mtp.py <base repo> <out.safetensors>`: reads the base repo's index and fetches only the

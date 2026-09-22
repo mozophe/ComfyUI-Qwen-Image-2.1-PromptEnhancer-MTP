@@ -5,6 +5,14 @@ from comfy.text_encoders.qwen35 import Qwen35
 from comfy.text_encoders.qwen_vl import qwen2vl_mrope_position_ids
 
 
+def pe_prompt(system_prompt, text, images, thinking):
+    # Qwen3.5 chat_template.jinja layout: system turn, user turn with image blocks before the text,
+    # then the generation prompt (thinking opens a <think> block, otherwise an empty closed one)
+    vision = "<|vision_start|><|image_pad|><|vision_end|>" * images
+    think = "<think>\n" if thinking else "<think>\n\n</think>\n\n"
+    return f"<|im_start|>system\n{system_prompt}<|im_end|>\n<|im_start|>user\n{vision}{text}<|im_end|>\n<|im_start|>assistant\n{think}"
+
+
 def mrope_table(position_ids, cap):
     # sequence position -> MRoPE ids: the prompt keeps its 3D ids, generated tokens continue
     # text positions on all three axes from where the core non-MTP loop would (max of last column + 1)
