@@ -22,7 +22,7 @@
 
 ## Overview
 
-Qwen-Image 2.1 ships two prompt enhancers (PE), Qwen3.5-9B fine-tunes that rewrite a short instruction into the detailed prompt Qwen-Image 2.1 was trained on. This extension runs them inside ComfyUI with the official system prompts and sampling settings. It also adds **multi-token prediction (MTP)**, which roughly doubles decoding speed at long lengths.
+Qwen-Image 2.1 ships two prompt enhancers (PE), Qwen3.5-9B fine-tunes that rewrite a short instruction into the detailed prompt Qwen-Image 2.1 was trained on. This extension runs them inside ComfyUI with the official system prompts and sampling settings. It also adds **multi-token prediction (MTP)**, which speeds up generation by about 1.35× for t2i and 1.65× for i2i.
 
 ### Features
 
@@ -30,7 +30,6 @@ Qwen-Image 2.1 ships two prompt enhancers (PE), Qwen3.5-9B fine-tunes that rewri
 - **Official presets.** The system prompt, thinking mode and sampling values come from Qwen's reference implementation.
 - **MTP for image prompts.** MTP speculative decoding also works when an image is attached; core ComfyUI falls back to regular decoding in that case.
 - **Clean outputs.** The node returns the answer with the reasoning removed, and separately the full output with the reasoning included.
-- **Reusable tooling.** A standalone script adds an MTP head to any Qwen3.5 fine-tune.
 
 ## Table of contents
 
@@ -41,7 +40,6 @@ Qwen-Image 2.1 ships two prompt enhancers (PE), Qwen3.5-9B fine-tunes that rewri
 - [Presets](#presets)
 - [Model files and disk usage](#model-files-and-disk-usage)
 - [Performance](#performance)
-- [Other Qwen3.5 fine-tunes](#other-qwen35-fine-tunes)
 - [Troubleshooting](#troubleshooting)
 - [Development](#development)
 - [Contributing](#contributing)
@@ -51,6 +49,8 @@ Qwen-Image 2.1 ships two prompt enhancers (PE), Qwen3.5-9B fine-tunes that rewri
 ## Requirements
 
 - A recent ComfyUI build that includes the Qwen3.5 text encoder with MTP support (`comfy/text_encoders/qwen35.py`)
+- A GPU with **16 GB of VRAM** (tested on NVIDIA), which keeps the whole model on the GPU at the default settings. Cards with less VRAM also work, because ComfyUI streams part of the weights from system RAM, but generation is much slower.
+- **32 GB of system RAM** recommended. ComfyUI reserves up to about 20 GB of system memory (RAM plus page file) while the model runs, although with 16 GB of VRAM only about 2 GB of it is actually in use during generation.
 - About **9.3 GB** of free disk space per model (`t2i`, `i2i`)
 - An internet connection for the first run only
 
@@ -148,32 +148,29 @@ These are the official values from [`prompt_rewrite/pe_core.py`](https://github.
 
 ## Performance
 
-RTX 4090 Laptop, i2i preset, one image:
+Generation speed, excluding prompt processing, on an RTX 4090 Laptop (16 GB) with ComfyUI's default dynamic VRAM. Everything else uses the preset defaults; i2i runs use one image scaled to 1 MP.
 
-| max_length | MTP off | MTP on |
-|---|---|---|
-| 24000 (default) | 21.3 tok/s | 36.7 tok/s |
-| 8192 | – | 52.9 tok/s |
-| 2048 | 47.8 tok/s | 72.7 tok/s |
+| Preset | max_length | MTP off | MTP on | Speed-up |
+|---|---|---|---|---|
+| t2i | 16256 (default) | 27.4 tok/s | 37.9 tok/s | 1.38× |
+| t2i | 8192 | 34.8 tok/s | 47.4 tok/s | 1.36× |
+| t2i | 4096 | 40.9 tok/s | 54.8 tok/s | 1.34× |
+| i2i | 24000 (default) | 21.3 tok/s | 35.6 tok/s | 1.67× |
+| i2i | 8192 | 31.3 tok/s | 51.5 tok/s | 1.65× |
+| i2i | 4096 | 36.0 tok/s | 58.8 tok/s | 1.63× |
 
-Decoding slows as `max_length` grows, because ComfyUI attends over the whole allocated cache. Outputs including the reasoning were 1.9k–3.3k tokens, so lowering `max_length` to about 8192 is much faster. Raise it again if the JSON is ever cut off.
+Peak VRAM was 12.8–13.9 GiB for t2i and 14.6–15.7 GiB for i2i.
+
+Decoding slows as `max_length` grows, because ComfyUI attends over the whole allocated cache. Outputs including the reasoning were 1.7k–3.7k tokens, so lowering `max_length` to 8192 is much faster while leaving headroom. At 4096 a long answer can be cut off; raise `max_length` again if the JSON is ever incomplete.
 
 With sampling on, MTP keeps the same output quality, but a given seed produces different text than with MTP off.
-
-## Other Qwen3.5 fine-tunes
-
-The `mtp` option works with any Qwen3.5 checkpoint that contains `mtp.*` tensors. To add them to another fine-tune, graft them from the base model of the same size:
-
-```bash
-python tools/graft_mtp.py <finetune.safetensors> Qwen/Qwen3.5-4B <finetune.mtp.safetensors>
-```
 
 ## Troubleshooting
 
 <details>
 <summary><b>"mtp is on but this Qwen3.5 checkpoint has no MTP head"</b></summary>
 
-The checkpoint was loaded with a regular CLIP loader, so it runs without MTP and is slower. Load it with **Qwen-Image 2.1 PE Loader (MTP)** instead, or add a head with `tools/graft_mtp.py`.
+The checkpoint was loaded with a regular CLIP loader, so it runs without MTP and is slower. Load it with **Qwen-Image 2.1 PE Loader (MTP)** instead.
 </details>
 
 <details>
