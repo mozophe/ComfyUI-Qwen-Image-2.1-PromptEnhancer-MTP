@@ -4,7 +4,7 @@ import folder_paths
 import comfy.sd
 from comfy_api.latest import ComfyExtension, io
 from comfy_extras.nodes_textgen import TextGenerate
-from .mtp import MTPClip, pe_prompt
+from .mtp import MTPClip, pe_prompt, strip_thinking
 from .pe import PE, ensure_model, system_prompt
 
 # official prompt_rewrite/pe_core.py profiles: shared sampling, per-task presence penalty and token cap
@@ -44,16 +44,21 @@ class TextGenerateQwen35MTP(TextGenerate):
             inputs=[inp["clip"], inp["prompt"], inp["image"], inp["video"], inp["audio"],
                     io.DynamicCombo.Input("preset", options=presets, tooltip="PE presets add the official system prompt and sampling defaults."),
                     inp["mtp"]],
-            outputs=parent.outputs,
+            outputs=[io.String.Output(display_name="generated_text", tooltip="The answer, with the thinking block removed."),
+                     io.String.Output(display_name="generated_text_with_thinking", tooltip="The full output including the thinking.")],
         )
 
     @classmethod
     def execute(cls, clip, prompt, preset, image=None, video=None, audio=None, mtp="auto") -> io.NodeOutput:
-        clip = MTPClip(clip)
+        text = cls.generate_text(MTPClip(clip), prompt, preset, image, video, audio, mtp)
+        return io.NodeOutput(strip_thinking(text), text)
+
+    @classmethod
+    def generate_text(cls, clip, prompt, preset, image, video, audio, mtp):
         name = preset["preset"]
         if name == "none":
             return super().execute(clip, prompt, preset["max_length"], preset["sampling_mode"], image=image, thinking=preset.get("thinking", False),
-                                   use_default_template=preset.get("use_default_template", True), video=video, audio=audio, mtp=mtp)
+                                   use_default_template=preset.get("use_default_template", True), video=video, audio=audio, mtp=mtp).args[0]
 
         if not preset["thinking"]:
             logging.warning(f"{name}: thinking is off; the PE models were trained with thinking on and degrade without it.")
@@ -62,7 +67,7 @@ class TextGenerateQwen35MTP(TextGenerate):
         ids = clip.generate(tokens, do_sample=True, max_length=preset["max_length"], temperature=preset["temperature"], top_k=preset["top_k"],
                             top_p=preset["top_p"], min_p=preset["min_p"], repetition_penalty=preset["repetition_penalty"], seed=preset["seed"],
                             presence_penalty=preset["presence_penalty"], mtp=False if mtp == "off" else (True if mtp == "auto" else int(mtp)))
-        return io.NodeOutput(clip.decode(ids))
+        return clip.decode(ids)
 
 
 class LoadQwenImage21PE(io.ComfyNode):

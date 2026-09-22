@@ -14,6 +14,15 @@ def pe_prompt(system_prompt, text, images, thinking):
     return f"<|im_start|>system\n{system_prompt}<|im_end|>\n<|im_start|>user\n{vision}{text}<|im_end|>\n<|im_start|>assistant\n{think}"
 
 
+def strip_thinking(text):
+    # the answer after the thinking block, as prompt_rewrite/pe_core.py split_thinking does
+    if "</think>" in text:
+        return text.partition("</think>")[2].strip()
+    if "<think>" in text:
+        return ""
+    return text.strip()
+
+
 def mrope_table(position_ids, cap):
     # sequence position -> MRoPE ids: the prompt keeps its 3D ids, generated tokens continue
     # text positions on all three axes from where the core non-MTP loop would (max of last column + 1)
