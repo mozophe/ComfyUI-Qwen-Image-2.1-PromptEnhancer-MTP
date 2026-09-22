@@ -38,7 +38,7 @@ The original checkpoint is streamed straight into the prepared file and never sa
 
 The node has two outputs:
 
-- **generated_text** — the answer with the thinking removed. With a PE preset that is the JSON object (`rewritten_prompt`, `wh_ratio`, and for edit `ratio_follow`). Feed it to `Extract Text from JSON` with key `rewritten_prompt` to get the prompt itself.
+- **generated_text** — the answer with the thinking removed. With a PE preset that is the JSON object (`rewritten_prompt`, `wh_ratio`, and for edit `ratio_follow`).
 - **generated_text_with_thinking** — the full output, reasoning included, for when you want to see how the model got there.
 
 ## Presets
