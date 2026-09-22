@@ -119,7 +119,6 @@ ComfyUI's **Generate Text** node, extended with PE presets and MTP support for i
 | `clip` | From the loader above, or any Qwen3.5 text encoder |
 | `prompt` | Your instruction, as plain text |
 | `image_1` … `image_10` | Input images, in order; the model refers to them as `<image1>`, `<image2>`…. Each can be a different size; any image over 1 MP is shrunk to 1 MP, as in the official pipeline. The i2i preset needs at least one image, and the t2i preset takes none. |
-| `video` / `audio` | Optional media inputs |
 | `preset` | A PE preset, or `none` for Generate Text's own inputs |
 | `mtp` | `auto`, `off`, or a fixed draft depth |
 

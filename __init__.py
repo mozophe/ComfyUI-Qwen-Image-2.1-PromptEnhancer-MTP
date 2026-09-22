@@ -45,7 +45,6 @@ class TextGenerateQwen35MTP(TextGenerate):
             inputs=[inp["clip"], inp["prompt"],
                     io.Autogrow.Input("images", template=io.Autogrow.TemplateNames(io.Image.Input("image"), names=[f"image_{i}" for i in range(1, 11)], min=0),
                                       tooltip="Input images, in order: the model calls them <image1>, <image2>, ... Sizes may differ; each is shrunk to at most 1 MP."),
-                    inp["video"], inp["audio"],
                     io.DynamicCombo.Input("preset", options=presets, tooltip="PE presets add the official system prompt and sampling defaults."),
                     inp["mtp"]],
             # the official prompt_rewrite output record's answer fields
@@ -58,11 +57,11 @@ class TextGenerateQwen35MTP(TextGenerate):
         )
 
     @classmethod
-    def execute(cls, clip, prompt, preset, images=None, video=None, audio=None, mtp="auto") -> io.NodeOutput:
+    def execute(cls, clip, prompt, preset, images=None, mtp="auto") -> io.NodeOutput:
         # connected inputs in socket order, each batch split into single images
         images = [im[i:i + 1] for _, im in sorted((images or {}).items(), key=lambda kv: int(kv[0].rsplit("_", 1)[1])) if im is not None
                   for i in range(im.shape[0])]
-        text = cls.generate_text(MTPClip(clip), prompt, preset, images, video, audio, mtp)
+        text = cls.generate_text(MTPClip(clip), prompt, preset, images, mtp)
         thinking, answer = split_thinking(text)
         parsed = parse_answer(answer)
         if parsed is None:
@@ -73,14 +72,14 @@ class TextGenerateQwen35MTP(TextGenerate):
         return io.NodeOutput(positive, "", thinking, wh_ratio, ratio_follow, parsed is not None)
 
     @classmethod
-    def generate_text(cls, clip, prompt, preset, images, video, audio, mtp):
+    def generate_text(cls, clip, prompt, preset, images, mtp):
         name = preset["preset"]
         if name == "none":
             if len({im.shape[1:] for im in images}) > 1:
                 raise ValueError("The 'none' preset takes images of one size; use a PE preset for differently sized images.")
             return super().execute(clip, prompt, preset["max_length"], preset["sampling_mode"], image=torch.cat(images) if images else None,
                                    thinking=preset.get("thinking", False), use_default_template=preset.get("use_default_template", True),
-                                   video=video, audio=audio, mtp=mtp).args[0]
+                                   mtp=mtp).args[0]
 
         task = PRESETS[name]["task"]
         # official resolve_image_paths refuses these rather than run the wrong experiment
@@ -91,7 +90,7 @@ class TextGenerateQwen35MTP(TextGenerate):
         if not preset["thinking"]:
             logging.warning(f"{name}: thinking is off; the PE models were trained with thinking on and degrade without it.")
         text = pe_prompt(system_prompt(task), prompt, len(images), preset["thinking"])
-        tokens = clip.tokenize(text, images=[fit_image(im) for im in images], min_length=1, video=video, audio=audio)
+        tokens = clip.tokenize(text, images=[fit_image(im) for im in images], min_length=1)
         ids = clip.generate(tokens, do_sample=True, max_length=preset["max_length"], temperature=preset["temperature"], top_k=preset["top_k"],
                             top_p=preset["top_p"], min_p=preset["min_p"], repetition_penalty=preset["repetition_penalty"], seed=preset["seed"],
                             presence_penalty=preset["presence_penalty"], mtp=False if mtp == "off" else (True if mtp == "auto" else int(mtp)))
