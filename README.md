@@ -36,7 +36,10 @@ The first run takes a while because it downloads and prepares the model (progres
 
 The original checkpoint is streamed straight into the prepared file and never saved on its own. The MTP head is only held in memory during setup, so each model needs about 9.3 GB of disk. The folder is the first `text_encoders` path ComfyUI knows about. A prepared model already present anywhere under your `text_encoders` folders is found and reused. To free the space, delete the `.mtp.safetensors` file.
 
-The output is the model's reasoning, then `</think>`, then JSON (`rewritten_prompt`, `wh_ratio`, and for edit `ratio_follow`). To get the prompt: `Replace Text (Regex)` with pattern `(?s).*</think>\s*` and an empty replacement, then `Extract Text from JSON` with key `rewritten_prompt`.
+The node has two outputs:
+
+- **generated_text** — the answer with the thinking removed. With a PE preset that is the JSON object (`rewritten_prompt`, `wh_ratio`, and for edit `ratio_follow`). Feed it to `Extract Text from JSON` with key `rewritten_prompt` to get the prompt itself.
+- **generated_text_with_thinking** — the full output, reasoning included, for when you want to see how the model got there.
 
 ## Presets
 
