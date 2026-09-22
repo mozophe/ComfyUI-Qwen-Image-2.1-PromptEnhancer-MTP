@@ -1,15 +1,15 @@
-# ComfyUI-Qwen35-MTP
+# ComfyUI-QwenImage-2.1-PromptEnhancer
 
 A ready-to-use **Qwen-Image 2.1 prompt enhancer** for ComfyUI, sped up with MTP speculative decoding.
 
-- **Load Qwen-Image 2.1 PE (MTP)** — pick `t2i` or `i2i`. On first run it downloads the prompt enhancer (9.5 GB, from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1/tree/main/text_encoders)) and adds the MTP head from `Qwen/Qwen3.5-9B` (~0.5 GB) in one pass. Later runs just load it.
-- **Prompt Enhancer (Qwen3.5 MTP)** — ComfyUI's Generate Text with presets for the prompt enhancer (official system prompt, thinking and sampling settings) and MTP that also works when an image is attached.
+- **Qwen-Image 2.1 PE Loader (MTP)** — pick `t2i` or `i2i`. On first run it downloads the prompt enhancer (9.5 GB, from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1/tree/main/text_encoders)) and adds the MTP head from `Qwen/Qwen3.5-9B` (~0.5 GB) in one pass. Later runs just load it.
+- **Qwen-Image 2.1 Prompt Enhancer** — ComfyUI's Generate Text with presets for the prompt enhancer (official system prompt, thinking and sampling settings) and MTP that also works when an image is attached.
 
 ## Install
 
 ```
 cd ComfyUI/custom_nodes
-git clone https://github.com/mozophe/ComfyUI-Qwen35-MTP
+git clone https://github.com/mozophe/ComfyUI-QwenImage-2.1-PromptEnhancer
 ```
 
 Restart ComfyUI.
@@ -17,7 +17,7 @@ Restart ComfyUI.
 ## Use
 
 ```
-Load Qwen-Image 2.1 PE (MTP) [i2i] ──clip──► Prompt Enhancer (Qwen3.5 MTP) [preset: Qwen-Image 2.1 PE (i2i)]
+Qwen-Image 2.1 PE Loader (MTP) [i2i] ──clip──► Qwen-Image 2.1 Prompt Enhancer [preset: Qwen-Image 2.1 PE (i2i)]
 Load Image ─► ImageScaleToTotalPixels (1.0 MP, lanczos) ──image──┘
 ```
 
@@ -31,7 +31,7 @@ The first run takes a while because it downloads and prepares the model (progres
 |---|---|---|
 | Prepared model | `ComfyUI/models/text_encoders/Qwen-Image-2.1-PE/qwen3.5_9b_qwen_image_2.1_pe_{i2i,t2i}.int8_convrot.mtp.safetensors` | 9.3 GB each |
 | During the download | the same folder, as `….mtp.safetensors.partial`, renamed when complete | up to 9.3 GB |
-| System prompts | `ComfyUI/custom_nodes/ComfyUI-Qwen35-MTP/system_prompts/` | ~28 KB |
+| System prompts | `ComfyUI/custom_nodes/ComfyUI-QwenImage-2.1-PromptEnhancer/system_prompts/` | ~28 KB |
 | Hugging Face cache | `~/.cache/huggingface/hub/` (small index and prompt files only) | < 1 MB |
 
 The original checkpoint is streamed straight into the prepared file and never saved on its own. The MTP head is only held in memory during setup, so each model needs about 9.3 GB of disk. The folder is the first `text_encoders` path ComfyUI knows about. A prepared model already present anywhere under your `text_encoders` folders is found and reused. To free the space, delete the `.mtp.safetensors` file.

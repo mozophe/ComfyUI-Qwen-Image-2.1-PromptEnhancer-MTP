@@ -37,7 +37,7 @@ class TextGenerateQwen35MTP(TextGenerate):
         presets.append(io.DynamicCombo.Option("none", [inp["max_length"], inp["sampling_mode"], inp["thinking"], inp["use_default_template"]]))
         return io.Schema(
             node_id="TextGenerateQwen35MTP",
-            display_name="Prompt Enhancer (Qwen3.5 MTP)",
+            display_name="Qwen-Image 2.1 Prompt Enhancer",
             category=parent.category,
             description="Generate Text with MTP speculative decoding also for Qwen3.5 image prompts, plus official Qwen-Image 2.1 PE presets.",
             search_aliases=["LLM", "qwen", "mtp", "speculative", "prompt enhance"],
@@ -75,7 +75,7 @@ class LoadQwenImage21PE(io.ComfyNode):
     def define_schema(cls):
         return io.Schema(
             node_id="LoadQwenImage21PEMTP",
-            display_name="Load Qwen-Image 2.1 PE (MTP)",
+            display_name="Qwen-Image 2.1 PE Loader (MTP)",
             category="loaders",
             description="Loads the Qwen-Image 2.1 prompt enhancer with an MTP head. The first run downloads it (9.5 GB) and prepares it; later runs load it directly.",
             inputs=[io.Combo.Input("model", options=list(PE), tooltip="t2i: text-to-image prompt enhancer. i2i: image-edit prompt enhancer (use with an image).")],
