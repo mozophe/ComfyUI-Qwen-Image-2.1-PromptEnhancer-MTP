@@ -23,7 +23,7 @@ def preset_inputs(max_length, presence_penalty):
         io.Float.Input("min_p", default=0.0, min=0.0, max=1.0, step=0.01),
         io.Float.Input("repetition_penalty", default=1.0, min=0.0, max=5.0, step=0.01),
         io.Float.Input("presence_penalty", default=presence_penalty, min=0.0, max=5.0, step=0.01),
-        io.Int.Input("seed", default=0, min=0, max=0xffffffffffffffff),
+        io.Int.Input("seed", default=0, min=0, max=0xffffffffffffffff, control_after_generate=True),
         io.Boolean.Input("thinking", default=True, tooltip="The PE models were trained with thinking on and degrade without it."),
     ]
 
