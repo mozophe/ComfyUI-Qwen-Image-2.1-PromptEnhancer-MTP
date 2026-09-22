@@ -1,15 +1,16 @@
 import logging
-from pathlib import Path
 from typing_extensions import override
+import folder_paths
+import comfy.sd
 from comfy_api.latest import ComfyExtension, io
 from comfy_extras.nodes_textgen import TextGenerate
 from .mtp import MTPClip, pe_prompt
+from .pe import PE, ensure_model, system_prompt
 
-SYSTEM_PROMPTS = Path(__file__).parent / "system_prompts"
 # official prompt_rewrite/pe_core.py profiles: shared sampling, per-task presence penalty and token cap
 PRESETS = {
-    "Qwen-Image 2.1 PE (edit)": {"file": "qwen_image_2.1_pe_edit.txt", "max_length": 24000, "presence_penalty": 0.0},
-    "Qwen-Image 2.1 PE (t2i)": {"file": "qwen_image_2.1_pe_t2i.txt", "max_length": 16256, "presence_penalty": 1.5},
+    "Qwen-Image 2.1 PE (edit)": {"task": "edit", "max_length": 24000, "presence_penalty": 0.0},
+    "Qwen-Image 2.1 PE (t2i)": {"task": "t2i", "max_length": 16256, "presence_penalty": 1.5},
 }
 
 
@@ -54,12 +55,9 @@ class TextGenerateQwen35MTP(TextGenerate):
             return super().execute(clip, prompt, preset["max_length"], preset["sampling_mode"], image=image, thinking=preset.get("thinking", False),
                                    use_default_template=preset.get("use_default_template", True), video=video, audio=audio, mtp=mtp)
 
-        path = SYSTEM_PROMPTS / PRESETS[name]["file"]
-        if not path.is_file():
-            raise FileNotFoundError(f"{path} not found. Run tools/fetch_prompts.py from the ComfyUI-Qwen35-MTP folder to download the official system prompts.")
         if not preset["thinking"]:
             logging.warning(f"{name}: thinking is off; the PE models were trained with thinking on and degrade without it.")
-        text = pe_prompt(path.read_text(encoding="utf-8"), prompt, 0 if image is None else image.shape[0], preset["thinking"])
+        text = pe_prompt(system_prompt(PRESETS[name]["task"]), prompt, 0 if image is None else image.shape[0], preset["thinking"])
         tokens = clip.tokenize(text, image=image, min_length=1, video=video, audio=audio)
         ids = clip.generate(tokens, do_sample=True, max_length=preset["max_length"], temperature=preset["temperature"], top_k=preset["top_k"],
                             top_p=preset["top_p"], min_p=preset["min_p"], repetition_penalty=preset["repetition_penalty"], seed=preset["seed"],
@@ -67,10 +65,29 @@ class TextGenerateQwen35MTP(TextGenerate):
         return io.NodeOutput(clip.decode(ids))
 
 
+class LoadQwenImage21PE(io.ComfyNode):
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="LoadQwenImage21PEMTP",
+            display_name="Load Qwen-Image 2.1 PE (MTP)",
+            category="loaders",
+            description="Loads the Qwen-Image 2.1 prompt enhancer with an MTP head. The first run downloads it (9.5 GB) and prepares it; later runs load it directly.",
+            inputs=[io.Combo.Input("model", options=list(PE), tooltip="edit: image-edit prompt enhancer (use with an image). t2i: text-to-image prompt enhancer.")],
+            outputs=[io.Clip.Output()],
+        )
+
+    @classmethod
+    def execute(cls, model) -> io.NodeOutput:
+        clip = comfy.sd.load_clip(ckpt_paths=[ensure_model(model)], embedding_directory=folder_paths.get_folder_paths("embeddings"),
+                                  clip_type=comfy.sd.CLIPType.QWEN_IMAGE)
+        return io.NodeOutput(clip)
+
+
 class Qwen35MTPExtension(ComfyExtension):
     @override
     async def get_node_list(self) -> list[type[io.ComfyNode]]:
-        return [TextGenerateQwen35MTP]
+        return [TextGenerateQwen35MTP, LoadQwenImage21PE]
 
 
 async def comfy_entrypoint() -> Qwen35MTPExtension:
