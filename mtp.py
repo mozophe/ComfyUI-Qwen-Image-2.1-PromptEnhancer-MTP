@@ -1,3 +1,4 @@
+import logging
 import torch
 import comfy.model_management
 import comfy.ops
@@ -26,14 +27,11 @@ def mrope_freqs(compute_freqs_cis, table):
     return lambda position_ids, device: tuple(t.unsqueeze(1) for t in compute_freqs_cis(table[:, position_ids[0].long()], device))
 
 
-def qwen35_mtp_encoder(clip):
-    # the Qwen3.5 clip model when it carries an MTP head, else None
+def qwen35_encoder(clip):
+    # the Qwen3.5 clip model inside a CLIP, else None
     cond = clip.cond_stage_model
     inner = getattr(cond, getattr(cond, "clip", ""), None)
-    transformer = getattr(inner, "transformer", None)
-    if isinstance(transformer, Qwen35) and transformer.mtp is not None:
-        return inner
-    return None
+    return inner if isinstance(getattr(inner, "transformer", None), Qwen35) else None
 
 
 def has_image(tokens):
@@ -76,7 +74,11 @@ class MTPClip:
         return getattr(self.clip, name)
 
     def generate(self, tokens, mtp=True, **kwargs):
-        inner = qwen35_mtp_encoder(self.clip) if mtp is not False and has_image(tokens) else None
-        if inner is None:
+        inner = qwen35_encoder(self.clip) if mtp is not False else None
+        if inner is not None and inner.transformer.mtp is None:
+            logging.warning("mtp is on but this Qwen3.5 checkpoint has no MTP head, so it runs without MTP (slower). "
+                            "For Qwen-Image 2.1 PE, load it with the 'Load Qwen-Image 2.1 PE (MTP)' node.")
+            inner = None
+        if inner is None or not has_image(tokens):
             return self.clip.generate(tokens, mtp=mtp, **kwargs)
         return generate_image_mtp(self.clip, inner, tokens, mtp=mtp, **kwargs)
