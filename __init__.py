@@ -37,7 +37,7 @@ class TextGenerateQwen35MTP(TextGenerate):
         presets.append(io.DynamicCombo.Option("none", [inp["max_length"], inp["sampling_mode"], inp["thinking"], inp["use_default_template"]]))
         return io.Schema(
             node_id="TextGenerateQwen35MTP",
-            display_name="Generate Text (Qwen3.5 MTP)",
+            display_name="Prompt Enhancer (Qwen3.5 MTP)",
             category=parent.category,
             description="Generate Text with MTP speculative decoding also for Qwen3.5 image prompts, plus official Qwen-Image 2.1 PE presets.",
             search_aliases=["LLM", "qwen", "mtp", "speculative", "prompt enhance"],

@@ -3,7 +3,7 @@
 A ready-to-use **Qwen-Image 2.1 prompt enhancer** for ComfyUI, sped up with MTP speculative decoding.
 
 - **Load Qwen-Image 2.1 PE (MTP)** — pick `t2i` or `i2i`. On first run it downloads the prompt enhancer (9.5 GB, from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1/tree/main/text_encoders)) and adds the MTP head from `Qwen/Qwen3.5-9B` (~0.5 GB) in one pass. Later runs just load it.
-- **Generate Text (Qwen3.5 MTP)** — ComfyUI's Generate Text with presets for the prompt enhancer (official system prompt, thinking and sampling settings) and MTP that also works when an image is attached.
+- **Prompt Enhancer (Qwen3.5 MTP)** — ComfyUI's Generate Text with presets for the prompt enhancer (official system prompt, thinking and sampling settings) and MTP that also works when an image is attached.
 
 ## Install
 
@@ -17,7 +17,7 @@ Restart ComfyUI.
 ## Use
 
 ```
-Load Qwen-Image 2.1 PE (MTP) [i2i] ──clip──► Generate Text (Qwen3.5 MTP) [preset: Qwen-Image 2.1 PE (i2i)]
+Load Qwen-Image 2.1 PE (MTP) [i2i] ──clip──► Prompt Enhancer (Qwen3.5 MTP) [preset: Qwen-Image 2.1 PE (i2i)]
 Load Image ─► ImageScaleToTotalPixels (1.0 MP, lanczos) ──image──┘
 ```
 
