@@ -1,0 +1,3 @@
+# Optional, as in the official prompt_rewrite: repairs answers that are nearly valid JSON (trailing comma, stray quote).
+# Without it, every well-formed answer still parses.
+json-repair>=0.5

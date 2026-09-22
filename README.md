@@ -62,7 +62,13 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/mozophe/ComfyUI-QwenImage-2.1-PromptEnhancer
 ```
 
-Restart ComfyUI. No extra Python packages are needed.
+Optionally, install `json-repair` with ComfyUI's Python, as the official code does. It repairs answers that are nearly valid JSON; without it, every well-formed answer still parses. ComfyUI Manager installs it automatically.
+
+```bash
+pip install -r ComfyUI-QwenImage-2.1-PromptEnhancer/requirements.txt
+```
+
+Restart ComfyUI.
 
 To update:
 

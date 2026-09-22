@@ -9,6 +9,12 @@ import folder_paths
 import comfy.utils
 from .graft import CHUNK, graft, mtp_tensors
 
+# official: json_repair fixes nearly valid JSON (a trailing comma, an unescaped quote); optional, as there
+try:
+    import json_repair
+except ImportError:
+    json_repair = None
+
 PE_REPO = "Comfy-Org/Qwen-Image-2.1"
 MTP_REPO = "Qwen/Qwen3.5-9B"
 PE = {
@@ -74,16 +80,58 @@ def fit_image(image, max_pixels=1024 * 1024):
     return comfy.utils.common_upscale(image.movedim(-1, 1), max(1, int(w * s)), max(1, int(h * s)), "lanczos", "disabled").movedim(1, -1)
 
 
+def balanced_spans(answer):
+    # official _balanced_spans: every balanced top-level {...} in order, skipping braces inside JSON strings
+    spans = []
+    depth = 0
+    start = -1
+    in_str = False
+    escaped = False
+    for i, ch in enumerate(answer):
+        if in_str:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                in_str = False
+            continue
+        if ch == '"':
+            in_str = True
+        elif ch == "{":
+            if depth == 0:
+                start = i
+            depth += 1
+        elif ch == "}" and depth > 0:
+            depth -= 1
+            if depth == 0 and start >= 0:
+                spans.append(answer[start:i + 1])
+    return spans
+
+
+def as_obj(candidate):
+    # official _as_obj: strict json first, then json_repair if it is installed
+    try:
+        obj = json.loads(candidate)
+    except json.JSONDecodeError:
+        if json_repair is None:
+            return None
+        obj = json_repair.repair_json(candidate, return_objects=True)
+        if isinstance(obj, list):
+            obj = obj[0] if obj else None
+    return obj if isinstance(obj, dict) else None
+
+
 def parse_answer(answer):
     # official parse_answer: the last JSON object in the answer that has a rewritten_prompt -> (prompt, wh_ratio, ratio_follow),
-    # None when there is none. Skips official's optional json_repair: near-JSON falls back to the raw answer.
-    decoder = json.JSONDecoder()
-    for i in reversed([i for i, c in enumerate(answer) if c == "{"]):
-        try:
-            obj = decoder.raw_decode(answer, i)[0]
-        except ValueError:
+    # None when there is none (official then falls back to the raw answer with parse_ok false)
+    answer = (answer or "").strip()
+    for candidate in reversed(balanced_spans(answer)):
+        obj = as_obj(candidate)
+        if obj is None:
             continue
-        text = obj.get("rewritten_prompt") or obj.get("rewrited_prompt")  # some training runs used the misspelling
-        if isinstance(text, str) and text.strip():
-            return text.strip(), str(obj.get("wh_ratio") or "").strip(), str(obj.get("ratio_follow") or "").strip()
+        rewritten = obj.get("rewritten_prompt") or obj.get("rewrited_prompt")  # some training runs used the misspelling
+        if not isinstance(rewritten, str) or not rewritten.strip():
+            continue
+        return rewritten.strip(), str(obj.get("wh_ratio") or "").strip(), str(obj.get("ratio_follow") or "").strip()
     return None
