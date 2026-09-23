@@ -50,9 +50,9 @@ Everything the node needs already comes with ComfyUI. Optionally, install json-r
 
 | ComfyUI version | Command |
 |---|---|
-| Windows portable | From the ComfyUI_windows_portable folder:<br>python_embeded\python.exe -m pip install json-repair |
-| Desktop app | In the app's terminal panel, which uses ComfyUI's Python:<br>pip install json-repair |
-| Manual install | With ComfyUI's virtual environment activated:<br>pip install json-repair |
+| Windows portable | From the ComfyUI_windows_portable folder:<br>`python_embeded\python.exe -m pip install json-repair` |
+| Desktop app | In the app's terminal panel, which uses ComfyUI's Python:<br>`pip install json-repair` |
+| Manual install | With ComfyUI's virtual environment activated:<br>`pip install json-repair` |
 
 Restart ComfyUI. The first run downloads the model (progress is shown on the node). If the download is interrupted, run the workflow again and it resumes.
 
