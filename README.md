@@ -149,7 +149,8 @@ Measured on an RTX 4090 Laptop GPU (16 GB), with one input image for editing.
 | Editing | 24000 (default) | 21 tok/s | 36 tok/s | 1.67× |
 | Editing | 8192 | 31 tok/s | 52 tok/s | 1.65× |
 
-**Tip:** set max_length to **8192** for faster results. A typical answer is 2,000–4,000 tokens, so this leaves plenty of room. If an answer is ever cut off, raise it again.
+> [!TIP]
+> Set **max_length** to **8192** for faster results. A typical answer is 2,000–4,000 tokens, so this leaves plenty of room. If an answer is ever cut off, raise it again.
 
 Peak VRAM use was about 14 GB for text-to-image and 16 GB for editing. With MTP on, quality is unchanged, but the same seed gives different text than with MTP off.
 
