@@ -154,6 +154,12 @@ The model was loaded with a regular CLIP loader. Use **Qwen-Image 2.1 PE Loader 
 </details>
 
 <details>
+<summary><b>"The PE loader is set to t2i but the preset is … (i2i)"</b></summary>
+
+The loader and the preset are set to different modes. Choose t2i on both for text-to-image, or i2i on both for editing.
+</details>
+
+<details>
 <summary><b>The output is cut off, or parse_ok is false</b></summary>
 
 The answer reached max_length. Increase it on the node.
