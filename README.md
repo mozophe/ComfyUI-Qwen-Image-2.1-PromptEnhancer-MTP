@@ -4,10 +4,13 @@
 
 **The official Qwen-Image 2.1 prompt enhancer for ComfyUI, accelerated with MTP speculative decoding.**
 
-[![ComfyUI](https://img.shields.io/badge/ComfyUI-custom%20node-blue)](https://github.com/comfyanonymous/ComfyUI)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![ComfyUI](https://img.shields.io/badge/ComfyUI-%E2%89%A5%200.37.0-blue)](https://github.com/Comfy-Org/ComfyUI)
+[![MTP speedup](https://img.shields.io/badge/MTP-1.35%E2%80%931.65%C3%97%20faster-orange)](#performance)
+[![Model](https://img.shields.io/badge/%F0%9F%A4%97-Comfy--Org%2FQwen--Image--2.1-yellow)](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)
+[![Code: MIT](https://img.shields.io/badge/code-MIT-green)](LICENSE)
+[![PE weights: Qwen Research](https://img.shields.io/badge/PE%20weights-non--commercial-red)](https://huggingface.co/Qwen/Qwen-Image-2.1-PE-I2I/blob/main/LICENSE)
 [![Last commit](https://img.shields.io/github/last-commit/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP)](https://github.com/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP/commits/main)
-[![Issues](https://img.shields.io/github/issues/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP)](https://github.com/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP/issues)
+[![Stars](https://img.shields.io/github/stars/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP?style=flat)](https://github.com/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP/stargazers)
 
 [Installation](#installation) •
 [Quick start](#quick-start) •
