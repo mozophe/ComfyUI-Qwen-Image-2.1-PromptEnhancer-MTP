@@ -24,7 +24,6 @@ def preset_inputs(max_length, presence_penalty):
         io.Float.Input("min_p", default=0.0, min=0.0, max=1.0, step=0.01),
         io.Float.Input("repetition_penalty", default=1.0, min=0.0, max=5.0, step=0.01),
         io.Float.Input("presence_penalty", default=presence_penalty, min=0.0, max=5.0, step=0.01),
-        io.Int.Input("seed", default=0, min=0, max=0xffffffffffffffff, control_after_generate=True),
         io.Boolean.Input("thinking", default=True, tooltip="The PE models were trained with thinking on and degrade without it."),
     ]
 
@@ -46,6 +45,10 @@ class TextGenerateQwen35MTP(TextGenerate):
                     io.Autogrow.Input("images", template=io.Autogrow.TemplateNames(io.Image.Input("image"), names=[f"image_{i}" for i in range(1, 11)], min=0),
                                       tooltip="Input images, in order: the model calls them <image1>, <image2>, ... Sizes may differ; each is shrunk to at most 1 MP."),
                     io.DynamicCombo.Input("preset", options=presets, tooltip="PE presets add the official system prompt and sampling defaults."),
+                    # outside the preset: the frontend duplicates a control_after_generate widget nested in a DynamicCombo on
+                    # every rebuild, so saved widget values shift on reload
+                    io.Int.Input("seed", default=0, min=0, max=0xffffffffffffffff, control_after_generate=True,
+                                 tooltip="Sampling seed for the PE presets. The 'none' preset uses its own seed."),
                     inp["mtp"]],
             # the official prompt_rewrite output record's answer fields
             outputs=[io.String.Output("positive_prompt", display_name="positive_prompt", tooltip="The rewritten prompt from the answer's JSON, for the text encoder. The whole answer if it has none."),
@@ -57,11 +60,11 @@ class TextGenerateQwen35MTP(TextGenerate):
         )
 
     @classmethod
-    def execute(cls, clip, prompt, preset, images=None, mtp="auto") -> io.NodeOutput:
+    def execute(cls, clip, prompt, preset, seed=0, images=None, mtp="auto") -> io.NodeOutput:
         # connected inputs in socket order, each batch split into single images
         images = [im[i:i + 1] for _, im in sorted((images or {}).items(), key=lambda kv: int(kv[0].rsplit("_", 1)[1])) if im is not None
                   for i in range(im.shape[0])]
-        text = cls.generate_text(MTPClip(clip), prompt, preset, images, mtp)
+        text = cls.generate_text(MTPClip(clip), prompt, preset, seed, images, mtp)
         thinking, answer = split_thinking(text)
         parsed = parse_answer(answer)
         if parsed is None:
@@ -72,7 +75,7 @@ class TextGenerateQwen35MTP(TextGenerate):
         return io.NodeOutput(positive, "", thinking, wh_ratio, ratio_follow, parsed is not None)
 
     @classmethod
-    def generate_text(cls, clip, prompt, preset, images, mtp):
+    def generate_text(cls, clip, prompt, preset, seed, images, mtp):
         name = preset["preset"]
         if name == "none":
             if len({im.shape[1:] for im in images}) > 1:
@@ -92,7 +95,7 @@ class TextGenerateQwen35MTP(TextGenerate):
         text = pe_prompt(system_prompt(task), prompt, len(images), preset["thinking"])
         tokens = clip.tokenize(text, images=[fit_image(im) for im in images], min_length=1)
         ids = clip.generate(tokens, do_sample=True, max_length=preset["max_length"], temperature=preset["temperature"], top_k=preset["top_k"],
-                            top_p=preset["top_p"], min_p=preset["min_p"], repetition_penalty=preset["repetition_penalty"], seed=preset["seed"],
+                            top_p=preset["top_p"], min_p=preset["min_p"], repetition_penalty=preset["repetition_penalty"], seed=seed,
                             presence_penalty=preset["presence_penalty"], mtp=False if mtp == "off" else (True if mtp == "auto" else int(mtp)))
         return clip.decode(ids)
 
