@@ -94,6 +94,17 @@ Select `t2i` on both nodes and leave the image inputs unconnected.
 
 Write your instruction as plain text, for example *"Make this image a realistic photo"*. Use the `positive_prompt` output as the prompt, and size the latent to `wh_ratio`. The first run takes a while because it downloads and prepares the model; progress is shown on the node.
 
+### Sample workflows
+
+The [`workflows`](workflows) folder has two complete workflows, built on ComfyUI's official Qwen-Image 2.1 templates with the prompt enhancer in front. Drag one into ComfyUI to open it.
+
+| Workflow | What it does |
+|---|---|
+| [`qwen_image_2.1_t2i_prompt_enhancer.json`](workflows/qwen_image_2.1_t2i_prompt_enhancer.json) | Text-to-image: the enhancer expands a short idea, and previews show the rewritten prompt and `wh_ratio` for sizing the latent |
+| [`qwen_image_2.1_edit_prompt_enhancer.json`](workflows/qwen_image_2.1_edit_prompt_enhancer.json) | Two-image edit: the same images go to the enhancer and to **Text Encode Qwen Image 2.1**; previews show the rewritten prompt, `ratio_follow` and `wh_ratio` |
+
+They use the Qwen-Image 2.1 int8 models from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1). The edit workflow uses the example images from ComfyUI's official edit template; the note in the workflow links to them.
+
 ## Nodes
 
 ### Qwen-Image 2.1 PE Loader (MTP)
@@ -120,6 +131,7 @@ ComfyUI's **Generate Text** node, extended with PE presets and MTP support for i
 | `prompt` | Your instruction, as plain text |
 | `image_1` … `image_10` | Input images, in order; the model refers to them as `<image1>`, `<image2>`…. Each can be a different size; any image over 1 MP is shrunk to 1 MP, as in the official pipeline. The i2i preset needs at least one image, and the t2i preset takes none. |
 | `preset` | A PE preset, or `none` for Generate Text's own inputs |
+| `seed` | Sampling seed for the PE presets, with the usual control after generate. The `none` preset uses its own seed. |
 | `mtp` | `auto`, `off`, or a fixed draft depth |
 
 | Output | Description |
