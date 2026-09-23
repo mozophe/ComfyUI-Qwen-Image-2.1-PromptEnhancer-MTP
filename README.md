@@ -2,7 +2,7 @@
 
 # ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP
 
-**The official Qwen-Image 2.1 prompt enhancer for ComfyUI, accelerated with MTP speculative decoding.**
+**ComfyUI nodes for Qwen-Image 2.1's official prompt enhancer, with MTP speculative decoding for faster generation.**
 
 [![ComfyUI](https://img.shields.io/badge/ComfyUI-%E2%89%A5%200.37.0-blue)](https://github.com/Comfy-Org/ComfyUI)
 [![MTP speedup](https://img.shields.io/badge/MTP-1.35%E2%80%931.65%C3%97%20faster-orange)](#performance)
