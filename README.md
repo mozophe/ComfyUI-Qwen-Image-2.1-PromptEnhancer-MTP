@@ -31,10 +31,10 @@ This extension runs the PE inside ComfyUI with Qwen's own system prompts and set
 
 ## Requirements
 
-- **ComfyUI v0.37.0** or newer
-- **16 GB of VRAM** recommended. Smaller GPUs work, but much more slowly.
-- **32 GB of system RAM** recommended
-- About **9.3 GB** of disk space per model (t2i for text-to-image, i2i for editing)
+- **ComfyUI:** v0.37.0 or newer
+- **VRAM:** 16 GB recommended. Smaller GPUs work, but much more slowly.
+- **System RAM:** 32 GB recommended
+- **Disk space:** about 10 GB per model (t2i for text-to-image, i2i for editing): the 9.5 GB enhancer plus the 0.5 GB MTP head
 
 ## Installation
 
