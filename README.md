@@ -160,9 +160,14 @@ The loader and the preset are set to different modes. Choose t2i on both for tex
 </details>
 
 <details>
-<summary><b>The output is cut off, or parse_ok is false</b></summary>
+<summary><b>parse_ok is false</b></summary>
 
-The answer reached max_length. Increase it on the node.
+The node couldn't find the rewritten prompt in the answer, so positive_prompt holds the whole answer instead. Check the thinking and positive_prompt outputs to see which case applies:
+
+- **The answer was cut off** (it ends mid-sentence, or positive_prompt is empty): generation reached max_length. Increase it on the node.
+- **The JSON is slightly broken**: install the requirements (see [Installation](#installation)) so json-repair can fix it, or run again with a different seed.
+- **Thinking is off**: turn it back on; the model follows the answer format less reliably without it.
+- **The preset is none**: expected, since that preset doesn't ask for the PE's answer format.
 </details>
 
 <details>
