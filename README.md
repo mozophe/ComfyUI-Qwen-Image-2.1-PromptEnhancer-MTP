@@ -46,13 +46,13 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP
 ```
 
-Everything the node needs already comes with ComfyUI. Optionally, install json-repair, which fixes the rare answer that is almost valid JSON. Run the command for your ComfyUI version:
+Everything the node needs already comes with ComfyUI. Optionally, install the requirements (json-repair, which fixes the rare answer that is almost valid JSON). Run the command for your ComfyUI version:
 
 | ComfyUI version | Command |
 |---|---|
-| Windows portable | From the ComfyUI_windows_portable folder:<br>`python_embeded\python.exe -m pip install json-repair` |
-| Desktop app | In the app's terminal panel, which uses ComfyUI's Python:<br>`pip install json-repair` |
-| Manual install | With ComfyUI's virtual environment activated:<br>`pip install json-repair` |
+| Windows portable | From the ComfyUI_windows_portable folder:<br>`python_embeded\python.exe -m pip install -r ComfyUI\custom_nodes\ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP\requirements.txt` |
+| Desktop app | In the app's terminal panel, from the extension's folder:<br>`pip install -r requirements.txt` |
+| Manual install | With ComfyUI's virtual environment activated, from the extension's folder:<br>`pip install -r requirements.txt` |
 
 Restart ComfyUI. The first run downloads the model (progress is shown on the node). If the download is interrupted, run the workflow again and it resumes.
 
