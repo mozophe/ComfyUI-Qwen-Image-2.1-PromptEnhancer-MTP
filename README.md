@@ -32,7 +32,7 @@ This extension runs the PE inside ComfyUI with Qwen's own system prompts and set
 
 ## Requirements
 
-- A recent version of ComfyUI (with Qwen3.5 MTP support)
+- **ComfyUI v0.37.0** or newer
 - **16 GB of VRAM** recommended. Smaller GPUs work, but much more slowly.
 - **32 GB of system RAM** recommended
 - About **9.3 GB** of disk space per model (`t2i` for text-to-image, `i2i` for editing)
@@ -92,7 +92,7 @@ Loads the prompt enhancer, ready for fast MTP generation.
 |---|---|
 | `model` | `t2i` for text-to-image, `i2i` for editing |
 
-On first use it downloads the model (about 9.5 GB) and saves a prepared copy in `ComfyUI/models/text_encoders/Qwen-Image-2.1-PE/`. If you already have the Comfy-Org PE checkpoint in a `text_encoders` folder, it is used instead of downloading. To free the space, delete the `.mtp.safetensors` file.
+On first use it downloads the model (about 9.5 GB) and saves a prepared copy in `ComfyUI/models/text_encoders/Qwen-Image-2.1-PE/`. If you already have the Comfy-Org PE checkpoint in a `text_encoders` folder, it is used instead of downloading.
 
 ### Qwen-Image 2.1 Prompt Enhancer (MTP)
 
