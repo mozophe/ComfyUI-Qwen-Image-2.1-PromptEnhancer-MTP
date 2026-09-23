@@ -62,12 +62,15 @@ To update, run git pull in the extension's folder.
 
 ### Sample workflows
 
-The easiest way to start is to drag a sample workflow from the [workflows](workflows) folder into ComfyUI.
+The easiest way to start is to drag one of these images into ComfyUI. Each image carries its workflow, so dropping it loads the whole graph. The same workflows are also in the [workflows](workflows) folder as JSON.
 
-| Workflow | Use it for |
-|---|---|
-| [qwen_image_2.1_t2i_prompt_enhancer.json](workflows/qwen_image_2.1_t2i_prompt_enhancer.json) | Text-to-image |
-| [qwen_image_2.1_edit_prompt_enhancer.json](workflows/qwen_image_2.1_edit_prompt_enhancer.json) | Editing with two input images |
+**Text-to-image** ([JSON](workflows/qwen_image_2.1_t2i_prompt_enhancer.json))
+
+![Text-to-image workflow](workflows/qwen_image_2.1_t2i_prompt_enhancer.png)
+
+**Editing with two input images** ([JSON](workflows/qwen_image_2.1_edit_prompt_enhancer.json))
+
+![Edit workflow](workflows/qwen_image_2.1_edit_prompt_enhancer.png)
 
 Both are ComfyUI's official Qwen-Image 2.1 templates with the enhancer added in front. They use the int8 models from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1).
 
