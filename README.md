@@ -38,6 +38,12 @@ This extension runs the PE inside ComfyUI with Qwen's own system prompts and set
 
 ## Installation
 
+### ComfyUI Manager
+
+Open **Manager → Custom Nodes Manager**, search for **Qwen-Image 2.1 Prompt Enhancer (MTP)**, click **Install**, and restart ComfyUI. The Manager installs the requirements too. To update, use **Update** in the same place.
+
+### Manual
+
 Clone the repository into your ComfyUI custom_nodes folder:
 
 ```bash

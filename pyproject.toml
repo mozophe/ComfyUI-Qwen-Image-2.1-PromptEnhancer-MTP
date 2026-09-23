@@ -1,0 +1,19 @@
+[project]
+name = "qwen-image-2.1-promptenhancer-mtp"
+version = "1.0.0"
+description = "The official Qwen-Image 2.1 prompt enhancer for ComfyUI, accelerated with MTP speculative decoding."
+license = { file = "LICENSE" }
+classifiers = ["Operating System :: OS Independent"]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+[project.urls]
+Repository = "https://github.com/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP"
+"Bug Tracker" = "https://github.com/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP/issues"
+
+[tool.comfy]
+PublisherId = "mozophe"
+DisplayName = "Qwen-Image 2.1 Prompt Enhancer (MTP)"
+requires-comfyui = ">=0.37.0"
