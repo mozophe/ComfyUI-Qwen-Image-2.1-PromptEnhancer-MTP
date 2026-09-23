@@ -85,6 +85,9 @@ class TextGenerateQwen35MTP(TextGenerate):
                                    mtp=mtp).args[0]
 
         task = PRESETS[name]["task"]
+        loaded = getattr(clip, "pe_task", None)  # set by our loader; absent on CLIPs from other loaders
+        if loaded is not None and loaded != task:
+            raise ValueError(f"The PE loader is set to {loaded} but the preset is {name}; pick the same mode on both.")
         # official resolve_image_paths refuses these rather than run the wrong experiment
         if task == "t2i" and images:
             raise ValueError(f"{name} takes no images; disconnect them or use the i2i preset and model.")
@@ -116,6 +119,7 @@ class LoadQwenImage21PE(io.ComfyNode):
     def execute(cls, model) -> io.NodeOutput:
         clip = comfy.sd.load_clip(ckpt_paths=[ensure_model(model)], embedding_directory=folder_paths.get_folder_paths("embeddings"),
                                   clip_type=comfy.sd.CLIPType.QWEN_IMAGE)
+        clip.pe_task = model  # lets the enhancer catch a loader/preset mismatch
         return io.NodeOutput(clip)
 
 
