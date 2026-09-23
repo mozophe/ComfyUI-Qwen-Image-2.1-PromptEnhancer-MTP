@@ -174,5 +174,4 @@ The prompt enhancer weights and system prompts are released under the non-commer
 ## Acknowledgements
 
 - [Qwen team](https://github.com/QwenLM/Qwen-Image-2.1) for Qwen-Image 2.1, the prompt enhancers and the reference implementation
-- [Comfy-Org](https://huggingface.co/Comfy-Org/Qwen-Image-2.1) for the int8 checkpoints
-- [ComfyUI](https://github.com/comfyanonymous/ComfyUI) for the Qwen3.5 text encoder and MTP decoding this extension builds on
+- [Comfy-Org](https://github.com/Comfy-Org/ComfyUI) for ComfyUI, its Qwen3.5 text encoder and MTP decoding, and the [int8 checkpoints](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)
