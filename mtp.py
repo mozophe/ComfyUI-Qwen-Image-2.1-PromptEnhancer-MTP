@@ -75,6 +75,14 @@ def generate_image_mtp(clip, inner, tokens, do_sample=True, max_length=256, temp
             del model.model.compute_freqs_cis  # drop the instance override, back to the class method
 
 
+def free_other_models(clip):
+    # dynamic VRAM never unloads a dynamic model for another one (model_management.free_memory, for_dynamic), leaving
+    # swapping to on demand; decoding runs every weight once per token, so any PE weight left in RAM streams on every
+    # step (half speed after an image model ran). Unload everything else from the PE's device first.
+    mm = comfy.model_management
+    mm.free_memory(1e30, clip.patcher.load_device, keep_loaded=[m for m in mm.current_loaded_models if m.model is clip.patcher])
+
+
 class MTPClip:
     # CLIP proxy: image prompts on a Qwen3.5 MTP model take the MRoPE-aware MTP path, all else is the real CLIP
     def __init__(self, clip):
@@ -84,6 +92,7 @@ class MTPClip:
         return getattr(self.clip, name)
 
     def generate(self, tokens, mtp=True, **kwargs):
+        free_other_models(self.clip)
         inner = qwen35_encoder(self.clip) if mtp is not False else None
         if inner is not None and inner.transformer.mtp is None:
             logging.warning("mtp is on but this Qwen3.5 checkpoint has no MTP head, so it runs without MTP (slower). "
