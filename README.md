@@ -12,7 +12,6 @@
 [Installation](#installation) •
 [Quick start](#quick-start) •
 [Nodes](#nodes) •
-[Presets](#presets) •
 [Performance](#performance) •
 [Troubleshooting](#troubleshooting)
 
@@ -22,232 +21,146 @@
 
 ## Overview
 
-Qwen-Image 2.1 ships two prompt enhancers (PE), Qwen3.5-9B fine-tunes that rewrite a short instruction into the detailed prompt Qwen-Image 2.1 was trained on. This extension runs them inside ComfyUI with the official system prompts and sampling settings. It also adds **multi-token prediction (MTP)**, which speeds up generation by about 1.35× for t2i and 1.65× for i2i.
+Qwen-Image 2.1 works best with long, detailed prompts. Its official prompt enhancer (PE) writes them for you: give it a short idea or edit instruction, and it returns a detailed prompt along with the aspect ratio to use.
 
-### Features
+This extension runs the PE inside ComfyUI with Qwen's own system prompts and settings, and makes it faster with **multi-token prediction (MTP)**: about **1.35×** for text-to-image and **1.65×** for image editing.
 
-- **One-click setup.** The model downloads and prepares itself on first use. Downloads resume after an interruption, and existing local copies are reused.
-- **Official presets.** The system prompt, thinking mode and sampling values come from Qwen's reference implementation.
-- **MTP for image prompts.** MTP speculative decoding also works when an image is attached; core ComfyUI falls back to regular decoding in that case.
-- **Ready-to-use outputs.** The node parses the model's JSON answer the way the official code does and outputs each field separately: the rewritten prompt, the aspect ratio and the thinking.
-- **Multiple input images.** Up to 10 images for editing, each any size, handled as the official pipeline does: in order as `<image1>`, `<image2>`…, each shrunk to at most 1 MP.
-
-## Table of contents
-
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick start](#quick-start)
-- [Nodes](#nodes)
-- [Presets](#presets)
-- [Model files and disk usage](#model-files-and-disk-usage)
-- [Performance](#performance)
-- [Troubleshooting](#troubleshooting)
-- [Development](#development)
-- [Contributing](#contributing)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
+- **Automatic setup.** The model downloads and prepares itself on first use.
+- **Official settings.** System prompts and sampling values match Qwen's reference code.
+- **Ready-to-use outputs.** The rewritten prompt and aspect ratio come out as separate outputs.
+- **Multi-image editing.** Up to 10 input images, any size.
 
 ## Requirements
 
-- A recent ComfyUI build that includes the Qwen3.5 text encoder with MTP support (`comfy/text_encoders/qwen35.py`)
-- A GPU with **16 GB of VRAM** (tested on NVIDIA), which keeps the whole model on the GPU at the default settings. Cards with less VRAM also work, because ComfyUI streams part of the weights from system RAM, but generation is much slower.
-- **32 GB of system RAM** recommended. ComfyUI reserves up to about 20 GB of system memory (RAM plus page file) while the model runs, although with 16 GB of VRAM only about 2 GB of it is actually in use during generation.
-- About **9.3 GB** of free disk space per model (`t2i`, `i2i`)
-- An internet connection for the first run only
+- A recent version of ComfyUI (with Qwen3.5 MTP support)
+- **16 GB of VRAM** recommended. Smaller GPUs work, but much more slowly.
+- **32 GB of system RAM** recommended
+- About **9.3 GB** of disk space per model (`t2i` for text-to-image, `i2i` for editing)
 
 ## Installation
 
 ```bash
 cd ComfyUI/custom_nodes
 git clone https://github.com/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP
-```
-
-Optionally, install `json-repair` with ComfyUI's Python, as the official code does. It repairs answers that are nearly valid JSON; without it, every well-formed answer still parses. ComfyUI Manager installs it automatically.
-
-```bash
 pip install -r ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP/requirements.txt
 ```
 
-Restart ComfyUI.
+Restart ComfyUI. The first run downloads the model (progress is shown on the node). If the download is interrupted, run the workflow again and it resumes.
 
-To update:
-
-```bash
-cd ComfyUI/custom_nodes/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP
-git pull
-```
+To update, run `git pull` in the extension's folder.
 
 ## Quick start
 
-### Image editing (i2i)
-
-```
-Qwen-Image 2.1 PE Loader (MTP) [i2i] ──clip──► Qwen-Image 2.1 Prompt Enhancer (MTP) [preset: Qwen-Image 2.1 PE (i2i)] ──positive_prompt──► your Qwen-Image 2.1 workflow
-Load Image ──image_1──┘
-```
-
-Connect more images to `image_2`, `image_3`… for multi-image edits, and refer to them in your instruction as `<image1>`, `<image2>`…, for example *"Put the woman from `<image2>` into the street in `<image1>`"*. There's no need to resize them first.
-
-### Text-to-image (t2i)
-
-Select `t2i` on both nodes and leave the image inputs unconnected.
-
-Write your instruction as plain text, for example *"Make this image a realistic photo"*. Use the `positive_prompt` output as the prompt, and size the latent to `wh_ratio`. The first run takes a while because it downloads and prepares the model; progress is shown on the node.
-
 ### Sample workflows
 
-The [`workflows`](workflows) folder has two complete workflows, built on ComfyUI's official Qwen-Image 2.1 templates with the prompt enhancer in front. Drag one into ComfyUI to open it.
+The easiest way to start is to drag a sample workflow from the [`workflows`](workflows) folder into ComfyUI.
 
-| Workflow | What it does |
+| Workflow | Use it for |
 |---|---|
-| [`qwen_image_2.1_t2i_prompt_enhancer.json`](workflows/qwen_image_2.1_t2i_prompt_enhancer.json) | Text-to-image: the enhancer expands a short idea, and previews show the rewritten prompt and `wh_ratio` for sizing the latent |
-| [`qwen_image_2.1_edit_prompt_enhancer.json`](workflows/qwen_image_2.1_edit_prompt_enhancer.json) | Two-image edit: the same images go to the enhancer and to **Text Encode Qwen Image 2.1**; previews show the rewritten prompt, `ratio_follow` and `wh_ratio` |
+| [`qwen_image_2.1_t2i_prompt_enhancer.json`](workflows/qwen_image_2.1_t2i_prompt_enhancer.json) | Text-to-image |
+| [`qwen_image_2.1_edit_prompt_enhancer.json`](workflows/qwen_image_2.1_edit_prompt_enhancer.json) | Editing with two input images |
 
-They use the Qwen-Image 2.1 int8 models from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1). The edit workflow uses the example images from ComfyUI's official edit template; the note in the workflow links to them.
+Both are ComfyUI's official Qwen-Image 2.1 templates with the enhancer added in front. They use the int8 models from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1).
+
+### Adding it to your own workflow
+
+```
+Qwen-Image 2.1 PE Loader (MTP) ──clip──► Qwen-Image 2.1 Prompt Enhancer (MTP) ──positive_prompt──► your text encoder
+                           Load Image ──image_1──┘   (editing only)
+```
+
+1. Choose the same mode on both nodes: the `t2i` loader with the t2i preset, or the `i2i` loader with the i2i preset.
+2. Write a short instruction in `prompt`:
+   - **Text-to-image:** *"a fox reading a book in a snowy forest, watercolor"*
+   - **Editing:** *"Put the woman from `<image2>` into the street in `<image1>`"*. Images are numbered by the input they are connected to, and can be any size.
+3. Use `positive_prompt` as your prompt, and size the image as described below.
+
+### Sizing the image
+
+The enhancer chooses an aspect ratio rather than exact pixel sizes, and the prompt it writes is composed for that shape.
+
+- **Text-to-image:** set your latent to the ratio in `wh_ratio`, for example `16:9`.
+- **Editing:** `ratio_follow` names the image whose framing to keep, for example `<image1>`. Connect that image as `image_1` of **Text Encode Qwen Image 2.1** and use its `latent` output. If `ratio_follow` is empty, use `wh_ratio` instead.
 
 ## Nodes
 
 ### Qwen-Image 2.1 PE Loader (MTP)
 
-Loads the prompt enhancer with an MTP head attached.
+Loads the prompt enhancer, ready for fast MTP generation.
 
 | Input | Description |
 |---|---|
-| `model` | `t2i` for text-to-image, `i2i` for image editing (use with an image) |
+| `model` | `t2i` for text-to-image, `i2i` for editing |
 
-| Output | Description |
-|---|---|
-| `CLIP` | The prompt enhancer, ready for the Prompt Enhancer node |
-
-On first use it downloads the checkpoint from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1/tree/main/text_encoders) (9.5 GB) and grafts on the MTP head from `Qwen/Qwen3.5-9B` (about 0.5 GB) in a single streaming pass. Later runs load the prepared file directly.
+On first use it downloads the model (about 9.5 GB) and saves a prepared copy in `ComfyUI/models/text_encoders/Qwen-Image-2.1-PE/`. If you already have the Comfy-Org PE checkpoint in a `text_encoders` folder, it is used instead of downloading. To free the space, delete the `.mtp.safetensors` file.
 
 ### Qwen-Image 2.1 Prompt Enhancer (MTP)
 
-ComfyUI's **Generate Text** node, extended with PE presets and MTP support for image prompts.
+ComfyUI's **Generate Text** node with the official PE presets built in.
 
 | Input | Description |
 |---|---|
-| `clip` | From the loader above, or any Qwen3.5 text encoder |
-| `prompt` | Your instruction, as plain text |
-| `image_1` … `image_10` | Input images, in order; the model refers to them as `<image1>`, `<image2>`…. Each can be a different size; any image over 1 MP is shrunk to 1 MP, as in the official pipeline. The i2i preset needs at least one image, and the t2i preset takes none. |
-| `preset` | A PE preset, or `none` for Generate Text's own inputs |
-| `seed` | Sampling seed for the PE presets, with the usual control after generate. The `none` preset uses its own seed. |
-| `mtp` | `auto`, `off`, or a fixed draft depth |
+| `clip` | The enhancer from the loader |
+| `prompt` | Your short instruction |
+| `image_1` … `image_10` | Input images for editing, referred to as `<image1>`, `<image2>`… |
+| `preset` | `Qwen-Image 2.1 PE (t2i)`, `Qwen-Image 2.1 PE (i2i)`, or `none` to use it as a plain Generate Text node |
+| `seed` | Change it for a different result |
+| `mtp` | `auto` (recommended), `off`, or a fixed draft depth |
 
 | Output | Description |
 |---|---|
-| `positive_prompt` | The `rewritten_prompt` from the answer, ready for the text encoder. If the answer has no valid JSON, this is the whole answer and a warning is logged. |
-| `negative_prompt` | Always empty, because neither PE model writes one. It's there for workflows that expect the slot. |
+| `positive_prompt` | The detailed prompt, ready for your text encoder |
+| `negative_prompt` | Always empty; the enhancer doesn't write one |
 | `thinking` | The model's reasoning |
-| `wh_ratio` | The aspect ratio the model chose, such as `16:9`. Empty when the output follows an input image. |
-| `ratio_follow` | i2i only: the input image whose aspect ratio the output keeps, such as `<image1>`. Empty otherwise. |
-| `parse_ok` | `false` when the answer had no valid JSON |
+| `wh_ratio` | The chosen aspect ratio, for example `16:9` |
+| `ratio_follow` | Editing only: the image whose shape to keep, for example `<image1>` |
+| `parse_ok` | `false` if the answer couldn't be read; `positive_prompt` then contains the full answer |
 
-These are the answer fields of the official `prompt_rewrite` output record.
-
-**Image size.** Like the official PE, the node gives an aspect ratio rather than pixel dimensions; you set the size in your latent.
-
-- **t2i:** size the latent to `wh_ratio`. It's part of the rewrite, because a prompt written for a wide composition gives a different picture on a square canvas.
-- **i2i:** `ratio_follow` names the canvas image, the one whose framing the edit keeps. Connect that image as `image_1` of ComfyUI's **Text Encode Qwen Image 2.1** node, whose `latent` output matches the first reference image's size. When `ratio_follow` is empty, the model chose a new shape in `wh_ratio` instead.
-
-## Presets
-
-| Preset | max_length | temp | top_k | top_p | min_p | repetition | presence | thinking |
-|---|---|---|---|---|---|---|---|---|
-| Qwen-Image 2.1 PE (t2i) | 16256 | 1.0 | 20 | 0.95 | 0 | 1.0 | 1.5 | on |
-| Qwen-Image 2.1 PE (i2i) | 24000 | 1.0 | 20 | 0.95 | 0 | 1.0 | 0 | on |
-| none | *Generate Text's own inputs* | | | | | | | |
-
-These are the official values from [`prompt_rewrite/pe_core.py`](https://github.com/QwenLM/Qwen-Image-2.1/tree/main/prompt_rewrite), and every value can be edited on the node. The official system prompt is downloaded on first use.
+The presets use the official values from Qwen's [`prompt_rewrite`](https://github.com/QwenLM/Qwen-Image-2.1/tree/main/prompt_rewrite) code, and every value can be changed on the node.
 
 > [!IMPORTANT]
-> Keep **thinking** on. Both models were trained with a `<think>` block and degrade without it. The node logs a warning if it is turned off.
-
-## Model files and disk usage
-
-| What | Location | Size |
-|---|---|---|
-| Prepared model | `ComfyUI/models/text_encoders/Qwen-Image-2.1-PE/qwen3.5_9b_qwen_image_2.1_pe_{i2i,t2i}.int8_convrot.mtp.safetensors` | 9.3 GB each |
-| In-progress download | Same folder, as `….mtp.safetensors.partial`, renamed when complete | up to 9.3 GB |
-| System prompts | `ComfyUI/custom_nodes/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP/system_prompts/` | ~28 KB |
-| Hugging Face cache | `~/.cache/huggingface/hub/` (index and prompt files only) | < 1 MB |
-
-- The original checkpoint is streamed straight into the prepared file and never stored on its own. The MTP head is held in memory only during setup.
-- If `qwen3.5_9b_qwen_image_2.1_pe_*.int8_convrot.safetensors` is already anywhere under your `text_encoders` folders, it is used as the source and nothing is downloaded.
-- A prepared `.mtp.safetensors` file anywhere under your `text_encoders` folders is found and reused.
-- New files go to the first `text_encoders` path ComfyUI knows about.
-- To free the space, delete the `.mtp.safetensors` file.
+> Keep **thinking** on. Both models were trained to reason before answering and give worse prompts without it.
 
 ## Performance
 
-Generation speed, excluding prompt processing, on an RTX 4090 Laptop (16 GB) with ComfyUI's default dynamic VRAM. Everything else uses the preset defaults; i2i runs use one image scaled to 1 MP.
+Measured on an RTX 4090 Laptop GPU (16 GB), with one input image for editing.
 
-| Preset | max_length | MTP off | MTP on | Speed-up |
+| Mode | `max_length` | MTP off | MTP on | Speed-up |
 |---|---|---|---|---|
-| t2i | 16256 (default) | 27.4 tok/s | 37.9 tok/s | 1.38× |
-| t2i | 8192 | 34.8 tok/s | 47.4 tok/s | 1.36× |
-| t2i | 4096 | 40.9 tok/s | 54.8 tok/s | 1.34× |
-| i2i | 24000 (default) | 21.3 tok/s | 35.6 tok/s | 1.67× |
-| i2i | 8192 | 31.3 tok/s | 51.5 tok/s | 1.65× |
-| i2i | 4096 | 36.0 tok/s | 58.8 tok/s | 1.63× |
+| Text-to-image | 16256 (default) | 27 tok/s | 38 tok/s | 1.38× |
+| Text-to-image | 8192 | 35 tok/s | 47 tok/s | 1.36× |
+| Editing | 24000 (default) | 21 tok/s | 36 tok/s | 1.67× |
+| Editing | 8192 | 31 tok/s | 52 tok/s | 1.65× |
 
-Peak VRAM was 12.8–13.9 GiB for t2i and 14.6–15.7 GiB for i2i.
+**Tip:** set `max_length` to **8192** for faster results. A typical answer is 2,000–4,000 tokens, so this leaves plenty of room. If an answer is ever cut off, raise it again.
 
-Decoding slows as `max_length` grows, because ComfyUI attends over the whole allocated cache. Outputs including the reasoning were 1.7k–3.7k tokens, so lowering `max_length` to 8192 is much faster while leaving headroom. At 4096 a long answer can be cut off; raise `max_length` again if the JSON is ever incomplete.
-
-With sampling on, MTP keeps the same output quality, but a given seed produces different text than with MTP off.
+Peak VRAM use was about 14 GB for text-to-image and 16 GB for editing. With MTP on, quality is unchanged, but the same seed gives different text than with MTP off.
 
 ## Troubleshooting
 
 <details>
 <summary><b>"mtp is on but this Qwen3.5 checkpoint has no MTP head"</b></summary>
 
-The checkpoint was loaded with a regular CLIP loader, so it runs without MTP and is slower. Load it with **Qwen-Image 2.1 PE Loader (MTP)** instead.
+The model was loaded with a regular CLIP loader. Use **Qwen-Image 2.1 PE Loader (MTP)** instead.
 </details>
 
 <details>
-<summary><b>The JSON output is cut off</b></summary>
+<summary><b>The output is cut off, or <code>parse_ok</code> is false</b></summary>
 
-Generation hit `max_length`. Increase it on the node.
-</details>
-
-<details>
-<summary><b>The download was interrupted</b></summary>
-
-Run the workflow again. The `.partial` file is picked up and the download resumes where it stopped.
+The answer reached `max_length`. Increase it on the node.
 </details>
 
 <details>
 <summary><b>The node stopped working after a ComfyUI update</b></summary>
 
-This extension relies on ComfyUI internals (`Qwen35._generate_mtp`, `process_tokens`, `compute_freqs_cis`). An update to those can break it; it fails with an error rather than producing wrong output silently. Please [open an issue](https://github.com/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP/issues) with the error and your ComfyUI version.
+This extension depends on parts of ComfyUI that can change between versions. Please [open an issue](https://github.com/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP/issues) with the error message and your ComfyUI version.
 </details>
-
-## Development
-
-The tests are plain Python scripts that print `ok` on success. Run them with ComfyUI's Python and point `COMFYUI_PATH` at your ComfyUI checkout (it defaults to two levels above this repo, which is correct when the repo sits in `custom_nodes`):
-
-```bash
-COMFYUI_PATH=/path/to/ComfyUI python tests/test_positions.py
-```
-
-| Module | Purpose |
-|---|---|
-| `__init__.py` | Node definitions and presets |
-| `mtp.py` | MTP decoding for image prompts (MRoPE-aware position table) |
-| `pe.py` | First-run model setup, official system prompts, image resizing and answer parsing |
-| `graft.py` | Streaming safetensors grafting, free of ComfyUI imports |
-| `tools/graft_mtp.py` | Command-line wrapper around `graft.py` |
-
-## Contributing
-
-Bug reports and pull requests are welcome. For anything beyond a small fix, please open an issue first to discuss the change. Before submitting, run the test scripts and describe how you tested it in ComfyUI.
 
 ## License
 
 The code in this repository is released under the [MIT License](LICENSE).
 
-The prompt enhancer weights and system prompts are released under the non-commercial [Qwen Research License](https://huggingface.co/Qwen/Qwen-Image-2.1-PE-I2I/blob/main/LICENSE). This repository contains neither; both are downloaded to your machine on first use.
+The prompt enhancer weights and system prompts are released under the non-commercial [Qwen Research License](https://huggingface.co/Qwen/Qwen-Image-2.1-PE-I2I/blob/main/LICENSE). They are not included in this repository; they are downloaded on first use.
 
 ## Acknowledgements
 
