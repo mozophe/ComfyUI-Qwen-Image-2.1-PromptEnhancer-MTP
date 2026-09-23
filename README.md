@@ -39,11 +39,20 @@ This extension runs the PE inside ComfyUI with Qwen's own system prompts and set
 
 ## Installation
 
+Clone the repository into your ComfyUI custom_nodes folder:
+
 ```bash
 cd ComfyUI/custom_nodes
 git clone https://github.com/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP
-pip install -r ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP/requirements.txt
 ```
+
+Everything the node needs already comes with ComfyUI. Optionally, install json-repair, which fixes the rare answer that is almost valid JSON. Run the command for your ComfyUI version:
+
+| ComfyUI version | Command |
+|---|---|
+| Windows portable | From the ComfyUI_windows_portable folder:<br>python_embeded\python.exe -m pip install json-repair |
+| Desktop app | In the app's terminal panel, which uses ComfyUI's Python:<br>pip install json-repair |
+| Manual install | With ComfyUI's virtual environment activated:<br>pip install json-repair |
 
 Restart ComfyUI. The first run downloads the model (progress is shown on the node). If the download is interrupted, run the workflow again and it resumes.
 
