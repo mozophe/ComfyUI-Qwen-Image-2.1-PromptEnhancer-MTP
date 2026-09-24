@@ -28,6 +28,7 @@ This extension runs the PE inside ComfyUI with Qwen's own system prompts and set
 - **Official settings.** System prompts and sampling values match Qwen's reference code.
 - **Ready-to-use outputs.** The rewritten prompt and aspect ratio come out as separate outputs.
 - **Multi-image editing.** Up to 10 input images, any size.
+- **Heretic versions.** Community abliterated fine-tunes that refuse less, for both t2i and i2i.
 
 ## Requirements
 
@@ -89,7 +90,7 @@ Qwen-Image 2.1 PE Loader (MTP) ──clip──► Qwen-Image 2.1 Prompt Enhance
                            Load Image ──image_1──┘   (editing only)
 ```
 
-1. Choose the same mode on both nodes: the t2i loader with the t2i preset, or the i2i loader with the i2i preset.
+1. Choose the same mode on both nodes: a t2i loader model (t2i or t2i - heretic) with the t2i preset, or an i2i one with the i2i preset.
 2. Write a short instruction in prompt:
    - **Text-to-image:** *"a fox reading a book in a snowy forest, watercolor"*
    - **Editing:** *"Put the woman from &lt;image2&gt; into the street in &lt;image1&gt;"*. Images are numbered by the input they are connected to, and can be any size.
@@ -170,7 +171,7 @@ The model was loaded with a regular CLIP loader. Use **Qwen-Image 2.1 PE Loader 
 <details>
 <summary><b>"The PE loader is set to t2i but the preset is … (i2i)"</b></summary>
 
-The loader and the preset are set to different modes. Choose t2i on both for text-to-image, or i2i on both for editing.
+The loader and the preset are set to different modes. Choose t2i on both for text-to-image, or i2i on both for editing. The heretic models count as their t2i or i2i mode.
 </details>
 
 <details>
