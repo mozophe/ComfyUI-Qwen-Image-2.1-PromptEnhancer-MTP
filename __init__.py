@@ -8,10 +8,12 @@ from comfy_extras.nodes_textgen import TextGenerate
 from .mtp import MTPClip, pe_prompt, split_thinking
 from .pe import PE, ensure_model, fit_image, parse_answer, system_prompt
 
-# official prompt_rewrite/pe_core.py profiles: shared sampling, per-task presence penalty and token cap
+# official prompt_rewrite/pe_core.py profiles: shared sampling, per-task presence penalty. The token cap is 8192
+# instead of the official 16256 (t2i) / 24000 (i2i): Qwen3.5 decode attends over the whole reserved cache, so a
+# higher cap is slower, and answers fit well within 8192
 PRESETS = {
-    "Qwen-Image 2.1 PE (t2i)": {"task": "t2i", "max_length": 16256, "presence_penalty": 1.5},
-    "Qwen-Image 2.1 PE (i2i)": {"task": "i2i", "max_length": 24000, "presence_penalty": 0.0},
+    "Qwen-Image 2.1 PE (t2i)": {"task": "t2i", "max_length": 8192, "presence_penalty": 1.5},
+    "Qwen-Image 2.1 PE (i2i)": {"task": "i2i", "max_length": 8192, "presence_penalty": 0.0},
 }
 
 

@@ -134,7 +134,7 @@ ComfyUI's **Generate Text** node with the official PE presets built in.
 | ratio_follow | Editing only: the image whose shape to keep, for example &lt;image1&gt; |
 | parse_ok | false if the answer couldn't be read; positive_prompt then contains the full answer |
 
-The presets use the official values from Qwen's [prompt_rewrite](https://github.com/QwenLM/Qwen-Image-2.1/tree/main/prompt_rewrite) code, and every value can be changed on the node.
+The presets use the official values from Qwen's [prompt_rewrite](https://github.com/QwenLM/Qwen-Image-2.1/tree/main/prompt_rewrite) code, except max_length: it defaults to 8192 instead of 16256 (t2i) and 24000 (i2i), because a higher max_length is slower (see [Performance](#performance)). Every value can be changed on the node.
 
 > [!IMPORTANT]
 > Keep **thinking** on. Both models were trained to reason before answering and give worse prompts without it.
@@ -145,13 +145,12 @@ Measured on an RTX 4090 Laptop GPU (16 GB), with one input image for editing.
 
 | Mode | max_length | MTP off | MTP on | Speed-up |
 |---|---|---|---|---|
-| Text-to-image | 16256 (default) | 27 tok/s | 38 tok/s | 1.38× |
-| Text-to-image | 8192 | 35 tok/s | 47 tok/s | 1.36× |
-| Editing | 24000 (default) | 21 tok/s | 36 tok/s | 1.67× |
-| Editing | 8192 | 31 tok/s | 52 tok/s | 1.65× |
+| Text-to-image | 8192 (default) | 35 tok/s | 47 tok/s | 1.36× |
+| Text-to-image | 16256 (official) | 27 tok/s | 38 tok/s | 1.38× |
+| Editing | 8192 (default) | 31 tok/s | 52 tok/s | 1.65× |
+| Editing | 24000 (official) | 21 tok/s | 36 tok/s | 1.67× |
 
-> [!TIP]
-> Set **max_length** to **8192** for faster results. A typical answer is 2,000–4,000 tokens, so this leaves plenty of room. If an answer is ever cut off, raise it again.
+A typical answer is 2,000–4,000 tokens, so 8192 leaves plenty of room. If an answer is ever cut off, raise max_length.
 
 Peak VRAM use was about 14 GB for text-to-image and 16 GB for editing. With MTP on, quality is unchanged, but the same seed gives different text than with MTP off.
 

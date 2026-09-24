@@ -120,7 +120,7 @@
       "widgets_values": [
         "A cat wearing a tiny astronaut suit",
         "Qwen-Image 2.1 PE (t2i)",
-        16256,
+        8192,
         1,
         20,
         0.95,
@@ -135,7 +135,7 @@
       "widgets_values_named": {
         "prompt": "A cat wearing a tiny astronaut suit",
         "preset": "Qwen-Image 2.1 PE (t2i)",
-        "preset.max_length": 16256,
+        "preset.max_length": 8192,
         "preset.temperature": 1,
         "preset.top_k": 20,
         "preset.top_p": 0.95,
