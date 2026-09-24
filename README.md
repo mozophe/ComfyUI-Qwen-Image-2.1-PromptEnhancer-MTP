@@ -94,14 +94,7 @@ Qwen-Image 2.1 PE Loader (MTP) ──clip──► Qwen-Image 2.1 Prompt Enhance
 2. Write a short instruction in prompt:
    - **Text-to-image:** *"a fox reading a book in a snowy forest, watercolor"*
    - **Editing:** *"Put the woman from &lt;image2&gt; into the street in &lt;image1&gt;"*. Images are numbered by the input they are connected to, and can be any size.
-3. Use positive_prompt as your prompt, and size the image as described below.
-
-### Sizing the image
-
-The enhancer chooses an aspect ratio rather than exact pixel sizes, and the prompt it writes is composed for that shape.
-
-- **Text-to-image:** set your latent to the ratio in wh_ratio, for example 16:9.
-- **Editing:** ratio_follow names the image whose framing to keep, for example &lt;image1&gt;. Connect that image as image_1 of **Text Encode Qwen Image 2.1** and use its latent output. If ratio_follow is empty, use wh_ratio instead.
+3. Use positive_prompt as your prompt.
 
 ## Nodes
 
