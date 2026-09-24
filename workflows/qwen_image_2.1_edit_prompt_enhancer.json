@@ -1,8 +1,8 @@
 {
   "id": "b1f31f7c-6839-4006-9cc2-0b311d4d82f1",
   "revision": 0,
-  "last_node_id": 17,
-  "last_link_id": 21,
+  "last_node_id": 20,
+  "last_link_id": 31,
   "nodes": [
     {
       "id": 1,
@@ -47,8 +47,8 @@
       "id": 2,
       "type": "TextGenerateQwen35MTP",
       "pos": [
-        0,
-        150
+        2.126081591186522,
+        125.54991425476086
       ],
       "size": [
         400,
@@ -87,16 +87,14 @@
           "name": "positive_prompt",
           "type": "STRING",
           "links": [
-            3,
-            10
+            10,
+            22
           ]
         },
         {
           "name": "negative_prompt",
           "type": "STRING",
-          "links": [
-            4
-          ]
+          "links": []
         },
         {
           "name": "thinking",
@@ -120,7 +118,9 @@
         {
           "name": "parse_ok",
           "type": "BOOLEAN",
-          "links": null
+          "links": [
+            30
+          ]
         }
       ],
       "properties": {
@@ -142,8 +142,8 @@
         1,
         0,
         true,
-        46613427952492,
-        "randomize",
+        42,
+        "fixed",
         "auto"
       ],
       "widgets_values_named": {
@@ -157,8 +157,8 @@
         "preset.repetition_penalty": 1,
         "preset.presence_penalty": 0,
         "preset.thinking": true,
-        "seed": 46613427952492,
-        "control_after_generate": "randomize",
+        "seed": 42,
+        "control_after_generate": "fixed",
         "mtp": "auto"
       }
     },
@@ -166,8 +166,8 @@
       "id": 3,
       "type": "UNETLoader",
       "pos": [
-        480,
-        380
+        474.7287233276367,
+        581.5481787750241
       ],
       "size": [
         270,
@@ -209,8 +209,8 @@
       "id": 4,
       "type": "CLIPLoader",
       "pos": [
-        480,
-        520
+        474.7287233276367,
+        705.5481787750241
       ],
       "size": [
         270,
@@ -225,7 +225,7 @@
           "name": "CLIP",
           "type": "CLIP",
           "links": [
-            2
+            31
           ]
         }
       ],
@@ -254,8 +254,8 @@
       "id": 5,
       "type": "VAELoader",
       "pos": [
-        480,
-        690
+        474.7287233276367,
+        853.5481787750241
       ],
       "size": [
         270,
@@ -271,7 +271,7 @@
           "type": "VAE",
           "links": [
             8,
-            13
+            25
           ]
         }
       ],
@@ -293,135 +293,18 @@
       }
     },
     {
-      "id": 6,
-      "type": "TextEncodeQwenImage21",
-      "pos": [
-        900,
-        380
-      ],
-      "size": [
-        400,
-        306
-      ],
-      "flags": {},
-      "order": 10,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "clip",
-          "type": "CLIP",
-          "link": 2
-        },
-        {
-          "name": "images.image_1",
-          "shape": 7,
-          "type": "IMAGE",
-          "link": 17
-        },
-        {
-          "name": "images.image_2",
-          "shape": 7,
-          "type": "IMAGE",
-          "link": 18
-        },
-        {
-          "name": "images.image_3",
-          "shape": 7,
-          "type": "IMAGE",
-          "link": null
-        },
-        {
-          "name": "images.image_4",
-          "shape": 7,
-          "type": "IMAGE",
-          "link": null
-        },
-        {
-          "name": "images.image_5",
-          "shape": 7,
-          "type": "IMAGE",
-          "link": null
-        },
-        {
-          "name": "vae",
-          "shape": 7,
-          "type": "VAE",
-          "link": 13
-        },
-        {
-          "name": "prompt",
-          "type": "STRING",
-          "widget": {
-            "name": "prompt"
-          },
-          "link": 3
-        },
-        {
-          "name": "negative_prompt",
-          "type": "STRING",
-          "widget": {
-            "name": "negative_prompt"
-          },
-          "link": 4
-        }
-      ],
-      "outputs": [
-        {
-          "name": "positive",
-          "type": "CONDITIONING",
-          "links": [
-            5
-          ]
-        },
-        {
-          "name": "negative",
-          "type": "CONDITIONING",
-          "links": [
-            6
-          ]
-        },
-        {
-          "name": "latent",
-          "type": "LATENT",
-          "links": [
-            14
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.37.0",
-        "Node name for S&R": "TextEncodeQwenImage21",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.8"
-        }
-      },
-      "widgets_values": [
-        "",
-        "",
-        1024
-      ],
-      "widgets_values_named": {
-        "prompt": "",
-        "negative_prompt": "",
-        "resolution": 1024
-      }
-    },
-    {
       "id": 7,
       "type": "KSampler",
       "pos": [
-        1340,
-        380
+        1337.1701854021308,
+        600.7261273880534
       ],
       "size": [
         320,
         480
       ],
       "flags": {},
-      "order": 13,
+      "order": 14,
       "mode": 0,
       "inputs": [
         {
@@ -432,17 +315,17 @@
         {
           "name": "positive",
           "type": "CONDITIONING",
-          "link": 5
+          "link": 26
         },
         {
           "name": "negative",
           "type": "CONDITIONING",
-          "link": 6
+          "link": 27
         },
         {
           "name": "latent_image",
           "type": "LATENT",
-          "link": 14
+          "link": 28
         }
       ],
       "outputs": [
@@ -465,7 +348,7 @@
         }
       },
       "widgets_values": [
-        315499517103223,
+        315713467717367,
         "randomize",
         25,
         1,
@@ -474,7 +357,7 @@
         1
       ],
       "widgets_values_named": {
-        "seed": 315499517103223,
+        "seed": 315713467717367,
         "control_after_generate": "randomize",
         "steps": 25,
         "cfg": 1,
@@ -487,15 +370,15 @@
       "id": 8,
       "type": "VAEDecode",
       "pos": [
-        1700,
-        380
+        1697.1701854021308,
+        600.7261273880534
       ],
       "size": [
         140,
         46
       ],
       "flags": {},
-      "order": 14,
+      "order": 15,
       "mode": 0,
       "inputs": [
         {
@@ -533,12 +416,12 @@
       "id": 10,
       "type": "PreviewAny",
       "pos": [
-        480,
-        0
+        474.7287233276367,
+        -1.7570922241210951
       ],
       "size": [
-        380,
-        150
+        403.7207937683106,
+        541.3052709991453
       ],
       "flags": {},
       "order": 9,
@@ -575,8 +458,8 @@
       "id": 11,
       "type": "QwenImage21Cache",
       "pos": [
-        900,
-        720
+        903.9350351457829,
+        961.9869432999179
       ],
       "size": [
         270,
@@ -624,8 +507,8 @@
       "id": 12,
       "type": "LoadImage",
       "pos": [
-        -460,
-        620
+        -484.4393673608156,
+        784.6441152422425
       ],
       "size": [
         320,
@@ -641,7 +524,7 @@
           "type": "IMAGE",
           "links": [
             15,
-            17
+            23
           ]
         },
         {
@@ -674,8 +557,8 @@
       "id": 13,
       "type": "LoadImage",
       "pos": [
-        -120,
-        780
+        -116.4393673608156,
+        784.6441152422425
       ],
       "size": [
         320,
@@ -691,7 +574,7 @@
           "type": "IMAGE",
           "links": [
             16,
-            18
+            24
           ]
         },
         {
@@ -766,8 +649,8 @@
       "id": 15,
       "type": "PreviewAny",
       "pos": [
-        900,
-        190
+        899.4728804565418,
+        200.71825444335914
       ],
       "size": [
         380,
@@ -829,10 +712,10 @@
         }
       },
       "widgets_values": [
-        "## Qwen-Image 2.1 image editing with the prompt enhancer\n\n1. Connect the images to **both** the Prompt Enhancer and **Text Encode Qwen Image 2.1**, in the same order. Refer to them in your instruction as `<image1>`, `<image2>`, ...\n2. The enhancer rewrites the instruction into a precise edit prompt.\n3. **image_1 sets the output canvas**: the encoder's latent follows its size. Check **ratio_follow**: if it names a different image (say `<image2>`), swap the images so that one is image_1 in both nodes.\n4. If **wh_ratio** is set instead, the model chose a new shape: replace the encoder's latent with an Empty Latent Image of that ratio.\n\nExample images from ComfyUI's official template: [portrait_model_denim.png](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/portrait_model_denim.png), [clothing_light_blue_denim_shirt.png](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/clothing_light_blue_denim_shirt.png)\n\n**Models** (from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`\n\nThe prompt enhancer downloads itself on first run (9.5 GB)."
+        "## Qwen-Image 2.1 image editing with the prompt enhancer\n\n1. Connect the images to **both** the Prompt Enhancer and **Text Encode Qwen Image 2.1**, in the same order. Refer to them in your instruction as `<image1>`, `<image2>`, ...\n2. The enhancer rewrites the instruction into a precise edit prompt.\n\nExample images from ComfyUI's official template: [portrait_model_denim.png](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/portrait_model_denim.png), [clothing_light_blue_denim_shirt.png](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/clothing_light_blue_denim_shirt.png)\n\n**Models** (from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`\n\nThe prompt enhancer downloads itself on first run (9.5 GB)."
       ],
       "widgets_values_named": {
-        "text": "## Qwen-Image 2.1 image editing with the prompt enhancer\n\n1. Connect the images to **both** the Prompt Enhancer and **Text Encode Qwen Image 2.1**, in the same order. Refer to them in your instruction as `<image1>`, `<image2>`, ...\n2. The enhancer rewrites the instruction into a precise edit prompt.\n3. **image_1 sets the output canvas**: the encoder's latent follows its size. Check **ratio_follow**: if it names a different image (say `<image2>`), swap the images so that one is image_1 in both nodes.\n4. If **wh_ratio** is set instead, the model chose a new shape: replace the encoder's latent with an Empty Latent Image of that ratio.\n\nExample images from ComfyUI's official template: [portrait_model_denim.png](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/portrait_model_denim.png), [clothing_light_blue_denim_shirt.png](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/clothing_light_blue_denim_shirt.png)\n\n**Models** (from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`\n\nThe prompt enhancer downloads itself on first run (9.5 GB)."
+        "text": "## Qwen-Image 2.1 image editing with the prompt enhancer\n\n1. Connect the images to **both** the Prompt Enhancer and **Text Encode Qwen Image 2.1**, in the same order. Refer to them in your instruction as `<image1>`, `<image2>`, ...\n2. The enhancer rewrites the instruction into a precise edit prompt.\n\nExample images from ComfyUI's official template: [portrait_model_denim.png](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/portrait_model_denim.png), [clothing_light_blue_denim_shirt.png](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/clothing_light_blue_denim_shirt.png)\n\n**Models** (from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`\n\nThe prompt enhancer downloads itself on first run (9.5 GB)."
       },
       "color": "#432",
       "bgcolor": "#653"
@@ -841,15 +724,15 @@
       "id": 17,
       "type": "SaveImageAdvanced",
       "pos": [
-        1890.2568724478444,
-        379.7606819292891
+        1887.4270578499752,
+        600.4868093173426
       ],
       "size": [
         646.767503877722,
         585.5607515794372
       ],
       "flags": {},
-      "order": 15,
+      "order": 16,
       "mode": 0,
       "inputs": [
         {
@@ -887,25 +770,154 @@
         "format.bit_depth": "8-bit",
         "format.input_color_space": "sRGB"
       }
+    },
+    {
+      "id": 18,
+      "type": "TextEncodeQwenImage21",
+      "pos": [
+        897.1701854021306,
+        600.7261273880534
+      ],
+      "size": [
+        400,
+        306
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 31
+        },
+        {
+          "name": "images.image_1",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 23
+        },
+        {
+          "name": "images.image_2",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 24
+        },
+        {
+          "name": "images.image_3",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "images.image_4",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "vae",
+          "shape": 7,
+          "type": "VAE",
+          "link": 25
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "prompt"
+          },
+          "link": 22
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": [
+            26
+          ]
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": [
+            27
+          ]
+        },
+        {
+          "name": "latent",
+          "type": "LATENT",
+          "links": [
+            28
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "TextEncodeQwenImage21",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [
+        "",
+        "",
+        1024
+      ],
+      "widgets_values_named": {
+        "prompt": "",
+        "negative_prompt": "",
+        "resolution": 1024
+      }
+    },
+    {
+      "id": 20,
+      "type": "PreviewAny",
+      "pos": [
+        902.5400790100085,
+        398.03240050048805
+      ],
+      "size": [
+        380,
+        150
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 30
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "title": "parse_ok",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "PreviewAny",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [],
+      "widgets_values_named": {}
     }
   ],
   "links": [
-    [
-      5,
-      6,
-      0,
-      7,
-      1,
-      "CONDITIONING"
-    ],
-    [
-      6,
-      6,
-      1,
-      7,
-      2,
-      "CONDITIONING"
-    ],
     [
       7,
       7,
@@ -947,14 +959,6 @@
       "MODEL"
     ],
     [
-      14,
-      6,
-      2,
-      7,
-      3,
-      "LATENT"
-    ],
-    [
       19,
       2,
       4,
@@ -969,6 +973,38 @@
       15,
       0,
       "STRING"
+    ],
+    [
+      26,
+      18,
+      0,
+      7,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      27,
+      18,
+      1,
+      7,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      28,
+      18,
+      2,
+      7,
+      3,
+      "LATENT"
+    ],
+    [
+      30,
+      2,
+      5,
+      20,
+      0,
+      "BOOLEAN"
     ],
     [
       21,
@@ -1003,51 +1039,43 @@
       "IMAGE"
     ],
     [
-      2,
+      31,
       4,
       0,
-      6,
+      18,
       0,
       "CLIP"
     ],
     [
-      17,
+      23,
       12,
       0,
-      6,
+      18,
       1,
       "IMAGE"
     ],
     [
-      18,
+      24,
       13,
       0,
-      6,
+      18,
       2,
       "IMAGE"
     ],
     [
-      13,
+      25,
       5,
       0,
-      6,
-      6,
+      18,
+      5,
       "VAE"
     ],
     [
-      3,
+      22,
       2,
       0,
+      18,
       6,
-      7,
-      "STRING"
-    ],
-    [
-      4,
-      2,
-      1,
-      6,
-      8,
       "STRING"
     ]
   ],
@@ -1056,10 +1084,10 @@
   "extra": {
     "ue_links": [],
     "ds": {
-      "scale": 0.4665073802097334,
+      "scale": 0.513158118230707,
       "offset": [
-        713.3933730269393,
-        476.29042812834155
+        789.2271000262897,
+        360.75601483818315
       ]
     },
     "links_added_by_ue": [],

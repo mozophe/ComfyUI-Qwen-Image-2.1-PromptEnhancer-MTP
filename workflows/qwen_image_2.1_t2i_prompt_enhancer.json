@@ -1,8 +1,8 @@
 {
   "id": "44902eae-2349-42b0-8ec2-8b3b8f8baa9f",
   "revision": 0,
-  "last_node_id": 15,
-  "last_link_id": 14,
+  "last_node_id": 16,
+  "last_link_id": 15,
   "nodes": [
     {
       "id": 1,
@@ -82,9 +82,7 @@
         {
           "name": "negative_prompt",
           "type": "STRING",
-          "links": [
-            4
-          ]
+          "links": []
         },
         {
           "name": "thinking",
@@ -106,7 +104,9 @@
         {
           "name": "parse_ok",
           "type": "BOOLEAN",
-          "links": null
+          "links": [
+            15
+          ]
         }
       ],
       "properties": {
@@ -118,7 +118,7 @@
         }
       },
       "widgets_values": [
-        "a corgi playing guitar in the rain",
+        "A cat wearing a tiny astronaut suit",
         "Qwen-Image 2.1 PE (t2i)",
         16256,
         1,
@@ -128,12 +128,12 @@
         1,
         1.5,
         true,
-        46064085610789,
-        "randomize",
+        42,
+        "fixed",
         "auto"
       ],
       "widgets_values_named": {
-        "prompt": "a corgi playing guitar in the rain",
+        "prompt": "A cat wearing a tiny astronaut suit",
         "preset": "Qwen-Image 2.1 PE (t2i)",
         "preset.max_length": 16256,
         "preset.temperature": 1,
@@ -143,8 +143,8 @@
         "preset.repetition_penalty": 1,
         "preset.presence_penalty": 1.5,
         "preset.thinking": true,
-        "seed": 46064085610789,
-        "control_after_generate": "randomize",
+        "seed": 42,
+        "control_after_generate": "fixed",
         "mtp": "auto"
       }
     },
@@ -152,8 +152,8 @@
       "id": 3,
       "type": "UNETLoader",
       "pos": [
-        480,
-        380
+        472.77127344110113,
+        505.6516874429931
       ],
       "size": [
         270,
@@ -195,8 +195,8 @@
       "id": 4,
       "type": "CLIPLoader",
       "pos": [
-        480,
-        520
+        472.77127344110113,
+        645.6516874429931
       ],
       "size": [
         270,
@@ -240,8 +240,8 @@
       "id": 5,
       "type": "VAELoader",
       "pos": [
-        480,
-        690
+        472.77127344110113,
+        815.6516874429931
       ],
       "size": [
         270,
@@ -281,15 +281,15 @@
       "id": 6,
       "type": "TextEncodeQwenImage21",
       "pos": [
-        900,
-        380
+        892.7712734411008,
+        505.6516874429931
       ],
       "size": [
         400,
         300
       ],
       "flags": {},
-      "order": 8,
+      "order": 7,
       "mode": 0,
       "inputs": [
         {
@@ -316,14 +316,6 @@
             "name": "prompt"
           },
           "link": 3
-        },
-        {
-          "name": "negative_prompt",
-          "type": "STRING",
-          "widget": {
-            "name": "negative_prompt"
-          },
-          "link": 4
         }
       ],
       "outputs": [
@@ -372,15 +364,15 @@
       "id": 7,
       "type": "KSampler",
       "pos": [
-        1340,
-        380
+        1332.7712734411016,
+        505.6516874429931
       ],
       "size": [
         320,
         480
       ],
       "flags": {},
-      "order": 10,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
@@ -424,7 +416,7 @@
         }
       },
       "widgets_values": [
-        167582197758524,
+        855444780553866,
         "randomize",
         25,
         1,
@@ -433,7 +425,7 @@
         1
       ],
       "widgets_values_named": {
-        "seed": 167582197758524,
+        "seed": 855444780553866,
         "control_after_generate": "randomize",
         "steps": 25,
         "cfg": 1,
@@ -446,15 +438,15 @@
       "id": 8,
       "type": "VAEDecode",
       "pos": [
-        1700,
-        380
+        1692.7712734411016,
+        505.6516874429931
       ],
       "size": [
         140,
         46
       ],
       "flags": {},
-      "order": 11,
+      "order": 12,
       "mode": 0,
       "inputs": [
         {
@@ -492,15 +484,15 @@
       "id": 10,
       "type": "PreviewAny",
       "pos": [
-        484.2003839666193,
-        -3.000307950106534
+        474.84551683789624,
+        0.5077537072268399
       ],
       "size": [
-        369.79897238991475,
-        262.21124822443176
+        375.64575082942883,
+        442.29073744418884
       ],
       "flags": {},
-      "order": 7,
+      "order": 8,
       "mode": 0,
       "inputs": [
         {
@@ -534,8 +526,8 @@
       "id": 11,
       "type": "EmptyLatentImage",
       "pos": [
-        900,
-        720
+        892.7712734411008,
+        845.6516874429931
       ],
       "size": [
         317.01168077256955,
@@ -642,10 +634,10 @@
         }
       },
       "widgets_values": [
-        "## Qwen-Image 2.1 text-to-image with the prompt enhancer\n\n1. Write a short idea in **Qwen-Image 2.1 Prompt Enhancer (MTP)**. It rewrites it into the detailed prompt Qwen-Image 2.1 was trained on.\n2. The rewrite is written for the aspect ratio shown in **wh_ratio**. Set **Empty Latent Image** to match; a prompt for a wide scene gives a different picture on a square canvas.\n\n| wh_ratio | 1 MP | 2K (native) |\n|---|---|---|\n| 1:1 | 1024×1024 | 2048×2048 |\n| 4:3 / 3:4 | 1184×896 | 2400×1792 |\n| 3:2 / 2:3 | 1248×832 | 2528×1696 |\n| 16:9 / 9:16 | 1376×768 | 2752×1536 |\n\nOther ratios: keep about the same pixel count, with both sides multiples of 32.\n\n**Models** (from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`\n\nThe prompt enhancer downloads itself on first run (9.5 GB)."
+        "## Qwen-Image 2.1 text-to-image with the prompt enhancer\n\nWrite a short idea in **Qwen-Image 2.1 Prompt Enhancer (MTP)**. It rewrites it into the detailed prompt Qwen-Image 2.1 was trained on.\n\nPixel sizes for each **wh_ratio**:\n\n| wh_ratio | 1 MP | 2K (native) |\n|---|---|---|\n| 1:1 | 1024×1024 | 2048×2048 |\n| 4:3 / 3:4 | 1184×896 | 2400×1792 |\n| 3:2 / 2:3 | 1248×832 | 2528×1696 |\n| 16:9 / 9:16 | 1376×768 | 2752×1536 |\n\nOther ratios: keep about the same pixel count, with both sides multiples of 32.\n\n**Models** (from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`\n\nThe prompt enhancer downloads itself on first run (9.5 GB)."
       ],
       "widgets_values_named": {
-        "text": "## Qwen-Image 2.1 text-to-image with the prompt enhancer\n\n1. Write a short idea in **Qwen-Image 2.1 Prompt Enhancer (MTP)**. It rewrites it into the detailed prompt Qwen-Image 2.1 was trained on.\n2. The rewrite is written for the aspect ratio shown in **wh_ratio**. Set **Empty Latent Image** to match; a prompt for a wide scene gives a different picture on a square canvas.\n\n| wh_ratio | 1 MP | 2K (native) |\n|---|---|---|\n| 1:1 | 1024×1024 | 2048×2048 |\n| 4:3 / 3:4 | 1184×896 | 2400×1792 |\n| 3:2 / 2:3 | 1248×832 | 2528×1696 |\n| 16:9 / 9:16 | 1376×768 | 2752×1536 |\n\nOther ratios: keep about the same pixel count, with both sides multiples of 32.\n\n**Models** (from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`\n\nThe prompt enhancer downloads itself on first run (9.5 GB)."
+        "text": "## Qwen-Image 2.1 text-to-image with the prompt enhancer\n\nWrite a short idea in **Qwen-Image 2.1 Prompt Enhancer (MTP)**. It rewrites it into the detailed prompt Qwen-Image 2.1 was trained on.\n\nPixel sizes for each **wh_ratio**:\n\n| wh_ratio | 1 MP | 2K (native) |\n|---|---|---|\n| 1:1 | 1024×1024 | 2048×2048 |\n| 4:3 / 3:4 | 1184×896 | 2400×1792 |\n| 3:2 / 2:3 | 1248×832 | 2528×1696 |\n| 16:9 / 9:16 | 1376×768 | 2752×1536 |\n\nOther ratios: keep about the same pixel count, with both sides multiples of 32.\n\n**Models** (from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`\n\nThe prompt enhancer downloads itself on first run (9.5 GB)."
       },
       "color": "#432",
       "bgcolor": "#653"
@@ -654,15 +646,15 @@
       "id": 15,
       "type": "SaveImageAdvanced",
       "pos": [
-        1881.6394769044828,
-        379.7118743312025
+        1874.4107503455843,
+        505.3635617741956
       ],
       "size": [
         646.767503877722,
         585.5607515794372
       ],
       "flags": {},
-      "order": 12,
+      "order": 13,
       "mode": 0,
       "inputs": [
         {
@@ -700,6 +692,48 @@
         "format.bit_depth": "8-bit",
         "format.input_color_space": "sRGB"
       }
+    },
+    {
+      "id": 16,
+      "type": "PreviewAny",
+      "pos": [
+        899.6847468731688,
+        189.96944247528072
+      ],
+      "size": [
+        380,
+        150
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 15
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "title": "parse_ok",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "PreviewAny",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [],
+      "widgets_values_named": {}
     }
   ],
   "links": [
@@ -717,14 +751,6 @@
       0,
       6,
       3,
-      "STRING"
-    ],
-    [
-      4,
-      2,
-      1,
-      6,
-      4,
       "STRING"
     ],
     [
@@ -792,6 +818,14 @@
       "STRING"
     ],
     [
+      15,
+      2,
+      5,
+      16,
+      0,
+      "BOOLEAN"
+    ],
+    [
       1,
       1,
       0,
@@ -813,10 +847,10 @@
   "extra": {
     "ue_links": [],
     "ds": {
-      "scale": 0.4665073802097333,
+      "scale": 0.5131581182307067,
       "offset": [
-        716.8659069132045,
-        554.0051426416591
+        658.6215113122773,
+        412.4813202760506
       ]
     },
     "links_added_by_ue": [],

@@ -47,7 +47,7 @@ class TextGenerateQwen35MTP(TextGenerate):
                     io.DynamicCombo.Input("preset", options=presets, tooltip="PE presets add the official system prompt and sampling defaults."),
                     # outside the preset: the frontend duplicates a control_after_generate widget nested in a DynamicCombo on
                     # every rebuild, so saved widget values shift on reload
-                    io.Int.Input("seed", default=0, min=0, max=0xffffffffffffffff, control_after_generate=True,
+                    io.Int.Input("seed", default=42, min=0, max=0xffffffffffffffff, control_after_generate=io.ControlAfterGenerate.fixed,
                                  tooltip="Sampling seed for the PE presets. The 'none' preset uses its own seed."),
                     inp["mtp"]],
             # the official prompt_rewrite output record's answer fields
@@ -60,7 +60,7 @@ class TextGenerateQwen35MTP(TextGenerate):
         )
 
     @classmethod
-    def execute(cls, clip, prompt, preset, seed=0, images=None, mtp="auto") -> io.NodeOutput:
+    def execute(cls, clip, prompt, preset, seed=42, images=None, mtp="auto") -> io.NodeOutput:
         # connected inputs in socket order, each batch split into single images
         images = [im[i:i + 1] for _, im in sorted((images or {}).items(), key=lambda kv: int(kv[0].rsplit("_", 1)[1])) if im is not None
                   for i in range(im.shape[0])]
