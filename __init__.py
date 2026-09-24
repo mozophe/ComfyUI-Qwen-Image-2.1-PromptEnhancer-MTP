@@ -110,8 +110,9 @@ class LoadQwenImage21PE(io.ComfyNode):
             node_id="LoadQwenImage21PEMTP",
             display_name="Qwen-Image 2.1 PE Loader (MTP)",
             category="loaders",
-            description="Loads the Qwen-Image 2.1 prompt enhancer with an MTP head. The first run downloads it (9.5 GB) and prepares it; later runs load it directly.",
-            inputs=[io.Combo.Input("model", options=list(PE), tooltip="t2i: text-to-image prompt enhancer. i2i: image-edit prompt enhancer (use with an image).")],
+            description="Loads the Qwen-Image 2.1 prompt enhancer with an MTP head. The first run downloads it (9.5 GB; heretic streams 19 GB of bf16 weights) and saves a prepared 10 GB copy; later runs load it directly.",
+            inputs=[io.Combo.Input("model", options=list(PE), tooltip="t2i: text-to-image prompt enhancer. i2i: image-edit prompt enhancer (use with an image). "
+                                                                       "heretic: community abliterated versions that refuse less.")],
             outputs=[io.Clip.Output()],
         )
 
@@ -119,7 +120,7 @@ class LoadQwenImage21PE(io.ComfyNode):
     def execute(cls, model) -> io.NodeOutput:
         clip = comfy.sd.load_clip(ckpt_paths=[ensure_model(model)], embedding_directory=folder_paths.get_folder_paths("embeddings"),
                                   clip_type=comfy.sd.CLIPType.QWEN_IMAGE)
-        clip.pe_task = model  # lets the enhancer catch a loader/preset mismatch
+        clip.pe_task = PE[model].get("task", model)  # lets the enhancer catch a loader/preset mismatch
         return io.NodeOutput(clip)
 
 
