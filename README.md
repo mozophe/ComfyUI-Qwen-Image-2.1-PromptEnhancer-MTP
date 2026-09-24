@@ -20,13 +20,13 @@
 
 ## Overview
 
-Qwen-Image 2.1 works best with long, detailed prompts. Its official prompt enhancer (PE) writes them for you: give it a short idea or edit instruction, and it returns a detailed prompt along with the aspect ratio to use.
+Qwen-Image 2.1 works best with long, detailed prompts. Its official prompt enhancer (PE) writes them for you: give it a short idea or edit instruction, and it returns a detailed prompt.
 
 This extension runs the PE inside ComfyUI with Qwen's own system prompts and settings, and makes it faster with **multi-token prediction (MTP)**: about **1.35×** for text-to-image and **1.65×** for image editing.
 
 - **Automatic setup.** The model downloads and prepares itself on first use.
 - **Official settings.** System prompts and sampling values match Qwen's reference code.
-- **Ready-to-use outputs.** The rewritten prompt and aspect ratio come out as separate outputs.
+- **Ready-to-use output.** The rewritten prompt comes out on its own, separate from the model's reasoning.
 - **Multi-image editing.** Up to 10 input images, any size.
 - **Heretic versions.** Community abliterated fine-tunes that refuse less, for both t2i and i2i.
 
