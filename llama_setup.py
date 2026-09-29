@@ -2,6 +2,7 @@
 # GGUFs, and hand the loader a LlamaPE handle
 import logging
 import os
+import platform
 import shutil
 import subprocess
 import tarfile
@@ -9,6 +10,9 @@ import tempfile
 import urllib.request
 import zipfile
 from pathlib import Path
+import folder_paths
+from huggingface_hub import hf_hub_download
+from .pe import PE
 
 LLAMA_TAG = "b11160"
 RELEASE_URL = f"https://github.com/ggml-org/llama.cpp/releases/download/{LLAMA_TAG}/"
@@ -122,3 +126,59 @@ def ensure_server(models_dir, build, fetch=download, check=check_server):
             archives.append(Path(tmp) / asset)
             fetch(RELEASE_URL + asset, archives[-1])
         return install_archives(archives, dest, build["exe"], check)
+
+
+GGUF_REPO = "mozophe/Qwen-Image-2.1-PE-MTP-GGUF"
+QUANTS = ("Q8_0", "Q4_K_M")
+KV_CACHE = ("f16", "q8_0")
+# vision file per i2i model: one file, built from the i2i model; the standard Qwen3.5 vision part also works with heretic
+MMPROJ = {"i2i": "qwen3.5_9b_qwen_image_2.1_pe_i2i.mmproj.bf16.gguf",
+          "i2i - heretic": "qwen3.5_9b_qwen_image_2.1_pe_i2i.mmproj.bf16.gguf"}
+HANDLE_ERROR = ("This is a llama.cpp prompt-enhancer handle; it only works with the Qwen-Image 2.1 Prompt Enhancer node.")
+
+
+def gguf_names(model, quant):
+    task = PE[model].get("task", model)
+    base = f"qwen3.5_9b_qwen_image_2.1_pe_{task}{'_heretic' if PE[model].get('heretic') else ''}"
+    return f"{base}.mtp.{quant}.gguf", MMPROJ.get(model)
+
+
+def gguf_folder():
+    return Path(folder_paths.get_folder_paths("text_encoders")[0]) / "Qwen-Image-2.1-PE"
+
+
+def ensure_gguf(model, quant, fetch=None, folder=None):
+    fetch = fetch or (lambda repo, name, local_dir: hf_hub_download(repo, name, local_dir=local_dir))
+    folder = Path(folder) if folder is not None else gguf_folder()
+    folder.mkdir(parents=True, exist_ok=True)
+    paths = []
+    for name in gguf_names(model, quant):
+        if name is None:
+            paths.append(None)
+        elif (folder / name).is_file():
+            paths.append(str(folder / name))
+        else:
+            logging.info(f"Qwen-Image 2.1 PE llama.cpp setup: downloading {GGUF_REPO}/{name} -> {folder}")
+            try:
+                paths.append(str(fetch(GGUF_REPO, name, str(folder))))
+            except Exception as e:
+                raise RuntimeError(f"Downloading {GGUF_REPO}/{name} failed ({e}); run the workflow again to resume.") from e
+    return tuple(paths)
+
+
+class LlamaPE:
+    # what the loader hands the generator through the CLIP socket for the llama.cpp backend
+    __slots__ = ("pe_task", "model", "mmproj", "quant", "kv_cache", "exe")
+
+    def __init__(self, pe_task, model, mmproj, quant, kv_cache, exe):
+        self.pe_task, self.model, self.mmproj, self.quant, self.kv_cache, self.exe = pe_task, model, mmproj, quant, kv_cache, exe
+
+    def __getattr__(self, name):  # only reached for attributes a real CLIP has and this handle doesn't
+        raise AttributeError(HANDLE_ERROR)
+
+
+def load_llama(model, quant, kv_cache):
+    build = select_build(platform.system(), platform.machine(), driver_version())
+    exe = ensure_server(folder_paths.models_dir, build)
+    gguf, mmproj = ensure_gguf(model, quant)
+    return LlamaPE(PE[model].get("task", model), gguf, mmproj, quant, kv_cache, str(exe))
