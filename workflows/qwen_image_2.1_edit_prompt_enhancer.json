@@ -1,58 +1,9 @@
 {
   "id": "b1f31f7c-6839-4006-9cc2-0b311d4d82f1",
   "revision": 0,
-  "last_node_id": 20,
-  "last_link_id": 31,
+  "last_node_id": 22,
+  "last_link_id": 33,
   "nodes": [
-    {
-      "id": 1,
-      "type": "LoadQwenImage21PEMTP",
-      "pos": [
-        0,
-        -84.45008574523914
-      ],
-      "size": [
-        322.628515625,
-        170
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": [
-            1
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "LoadQwenImage21PEMTP",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.8"
-        }
-      },
-      "widgets_values": [
-        "i2i",
-        "llama.cpp",
-        "Q8_0",
-        "f16",
-        false,
-        true
-      ],
-      "widgets_values_named": {
-        "model": "i2i",
-        "backend": "llama.cpp",
-        "backend.quant": "Q8_0",
-        "backend.kv_cache": "f16",
-        "backend.vision_on_cpu": false,
-        "backend.unload_model": true
-      }
-    },
     {
       "id": 2,
       "type": "TextGenerateQwen35MTP",
@@ -71,7 +22,7 @@
         {
           "name": "clip",
           "type": "CLIP",
-          "link": 1
+          "link": 33
         },
         {
           "name": "images.image_1",
@@ -184,7 +135,7 @@
         82
       ],
       "flags": {},
-      "order": 1,
+      "order": 0,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -227,7 +178,7 @@
         106
       ],
       "flags": {},
-      "order": 2,
+      "order": 1,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -272,7 +223,7 @@
         58
       ],
       "flags": {},
-      "order": 3,
+      "order": 2,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -358,7 +309,7 @@
         }
       },
       "widgets_values": [
-        997141635537364,
+        10535168742098,
         "randomize",
         25,
         1,
@@ -367,7 +318,7 @@
         1
       ],
       "widgets_values_named": {
-        "seed": 997141635537364,
+        "seed": 10535168742098,
         "control_after_generate": "randomize",
         "steps": 25,
         "cfg": 1,
@@ -525,7 +476,7 @@
         420
       ],
       "flags": {},
-      "order": 4,
+      "order": 3,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -575,7 +526,7 @@
         420
       ],
       "flags": {},
-      "order": 5,
+      "order": 4,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -701,15 +652,15 @@
       "id": 16,
       "type": "MarkdownNote",
       "pos": [
-        -487.01192608615133,
-        -81.87752701990328
+        -485.72564672348346,
+        -114.03460029178896
       ],
       "size": [
         440.58046980268557,
         771.0417382139862
       ],
       "flags": {},
-      "order": 6,
+      "order": 5,
       "mode": 0,
       "inputs": [],
       "outputs": [],
@@ -925,6 +876,54 @@
       },
       "widgets_values": [],
       "widgets_values_named": {}
+    },
+    {
+      "id": 22,
+      "type": "LoadQwenImage21PEMTP",
+      "pos": [
+        1.2862793626678468,
+        -114.03457055672591
+      ],
+      "size": [
+        322.628515625,
+        178
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            33
+          ]
+        }
+      ],
+      "properties": {
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        },
+        "Node name for S&R": "LoadQwenImage21PEMTP"
+      },
+      "widgets_values": [
+        "i2i",
+        "llama.cpp",
+        "Q8_0",
+        "f16",
+        false,
+        true
+      ],
+      "widgets_values_named": {
+        "model": "i2i",
+        "backend": "llama.cpp",
+        "backend.quant": "Q8_0",
+        "backend.kv_cache": "f16",
+        "backend.vision_on_cpu": false,
+        "backend.unload_model": true
+      }
     }
   ],
   "links": [
@@ -1025,14 +1024,6 @@
       "IMAGE"
     ],
     [
-      1,
-      1,
-      0,
-      2,
-      0,
-      "CLIP"
-    ],
-    [
       15,
       12,
       0,
@@ -1087,6 +1078,14 @@
       18,
       6,
       "STRING"
+    ],
+    [
+      33,
+      22,
+      0,
+      2,
+      0,
+      "CLIP"
     ]
   ],
   "groups": [],
@@ -1094,10 +1093,10 @@
   "extra": {
     "ue_links": [],
     "ds": {
-      "scale": 0.5131581182307067,
+      "scale": 0.5131581182307069,
       "offset": [
-        723.3374969993238,
-        394.33098308396484
+        686.9704656119752,
+        407.7234743267675
       ]
     },
     "links_added_by_ue": [],
