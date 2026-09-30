@@ -42,4 +42,7 @@ calls = ls.SERVER.calls
 # finds it already asleep), so the completion must wait until it sleeps
 assert calls.index("wait_asleep") < calls.index("stream"), calls
 assert calls[-1] == "wait_asleep", calls  # and the VRAM is freed again before the next node
+# tokens are counted locally: /tokenize would wake the sleeping server, and the wait above would put it to sleep again,
+# costing a second full model load per generation
+assert "/tokenize" not in calls and calls.count("ensure") == 1, calls
 print("ok")

@@ -7,11 +7,14 @@ node = importlib.util.module_from_spec(spec)
 sys.modules["qpe"] = node
 spec.loader.exec_module(node)
 from qpe.llama_setup import LlamaPE
-from qpe.llama_server import image_tokens, estimate_text_tokens, context_size, mtp_args, server_key, server_command, needs_restart
+from qpe.llama_server import image_tokens, count_tokens, context_size, mtp_args, server_key, server_command, needs_restart
 
 assert image_tokens(1024, 1024) == 32 * 32 + 2
 assert image_tokens(700, 1000) == 22 * 32 + 2  # ceil(700/32)=22, ceil(1000/32)=32: never under-counts odd sizes
-assert estimate_text_tokens("x" * 3000) == 1000 and estimate_text_tokens("ab") == 1
+# ComfyUI's bundled Qwen3.5 tokenizer counts like llama.cpp's /tokenize (reference counts from llama-tokenize), chat
+# special tokens and CJK included, so a sleeping server needn't be woken to size the context
+assert count_tokens("<|im_start|>user\n一只柯基犬在雨中弹吉他<|im_end|>\n<|im_start|>assistant\n<think>\n") == 18
+assert count_tokens("a corgi playing guitar in the rain, café naïve 🐶") == 16
 assert context_size(4550 + 2052, 8192) == 16384 and context_size(1, 1) == 4096 and context_size(4096, 4096) == 8192
 
 assert mtp_args("off") == [] and mtp_args("auto") == ["--spec-type", "draft-mtp"]

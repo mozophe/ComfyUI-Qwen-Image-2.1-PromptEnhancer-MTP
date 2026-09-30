@@ -4,6 +4,7 @@ import atexit
 import base64
 import contextlib
 import ctypes
+import functools
 import io
 import json
 import logging
@@ -32,9 +33,17 @@ def image_tokens(h, w):
     return math.ceil(h / 32) * math.ceil(w / 32) + 2
 
 
-def estimate_text_tokens(text):
-    # the PE system prompts run at ~4 chars/token; 3 leaves room, and /tokenize corrects it before generating
-    return max(1, math.ceil(len(text) / 3))
+@functools.cache
+def _tokenizer():
+    from transformers import Qwen2Tokenizer
+    import comfy.text_encoders.qwen35
+    return Qwen2Tokenizer.from_pretrained(os.path.join(os.path.dirname(comfy.text_encoders.qwen35.__file__), "qwen35_tokenizer"))
+
+
+def count_tokens(text):
+    # ComfyUI's bundled Qwen3.5 tokenizer, the PE's own: counts like llama-server's /tokenize without waking a sleeping
+    # server (a wake reloads the whole model)
+    return len(_tokenizer()(text, add_special_tokens=False)["input_ids"])
 
 
 def context_size(prompt_tokens, max_length):
@@ -232,15 +241,6 @@ class LlamaServer:
         with self._request(path, timeout=5) as r:
             return json.load(r)
 
-    def post(self, path, body):
-        try:
-            with self._request(path, body) as r:
-                return json.load(r)
-        except urllib.error.HTTPError as e:
-            raise self.fail(f"{path} failed: {e.read().decode('utf-8', 'replace')[:500]}") from e
-        except OSError as e:
-            raise self.fail(f"{path} failed ({e})") from e
-
     @contextlib.contextmanager
     def stream(self, body):
         try:
@@ -277,9 +277,8 @@ def generate(handle, text, images, preset, seed, mtp):
     img_tokens = sum(image_tokens(im.shape[1], im.shape[2]) for im in fitted)
     mm.unload_all_models()  # llama-server's VRAM is outside ComfyUI's memory manager
     mm.soft_empty_cache()
-    SERVER.ensure(handle, context_size(estimate_text_tokens(text) + img_tokens, preset["max_length"]), mtp)
-    exact = len(SERVER.post("/tokenize", {"content": text})["tokens"]) + img_tokens
-    SERVER.ensure(handle, context_size(exact, preset["max_length"]), mtp)  # restarts only if the estimate was short
+    # +64: margin for any tokenizer difference from llama.cpp (none seen: equal or one over on the PE prompts)
+    SERVER.ensure(handle, context_size(count_tokens(text) + img_tokens + 64, preset["max_length"]), mtp)
     body = completion_body(insert_markers(text, SERVER.marker, len(fitted)), preset, seed, [png_b64(im) for im in fitted])
     pbar = comfy.utils.ProgressBar(preset["max_length"])
     done = [0]
