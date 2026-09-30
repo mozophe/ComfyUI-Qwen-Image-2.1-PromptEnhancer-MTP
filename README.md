@@ -131,7 +131,7 @@ The GGUFs include the MTP head, so MTP works here too. The model card lists how 
 
 - **quant:** Q8_0 for 16 GB GPUs and up. Q4_K_M for 8–12 GB; it is also faster, with a small quality cost.
 - **kv_cache:** f16 by default. q8_0 saves some memory for Q4_K_M on 8 GB GPUs, at almost no quality cost.
-- **unload_model:** on by default: the PE's VRAM is freed after each prompt so the rest of the workflow gets the GPU. Turn it off only if your GPU has room for both the PE (about 10 GB for Q8_0, 6 GB for Q4_K_M) and your other models, typically 24–32 GB or more. Each prompt then skips reloading the PE, about 6 s faster for text-to-image on an RTX 4090 Laptop. On a GPU that's too small the rest of the workflow slows down instead, since ComfyUI can't free llama-server's memory. The ComfyUI backend has no such option because it doesn't need one: ComfyUI's dynamic VRAM moves its own models between RAM and VRAM as they're needed, and in testing, keeping them loaded made no difference to its speed.
+- **unload_model:** on by default: the PE's VRAM is freed after each prompt so the rest of the workflow gets the GPU. Turn it off only if your GPU has room for both the PE (about 10 GB for Q8_0, 6 GB for Q4_K_M) and your other models, typically 24–32 GB or more. Each prompt then skips reloading the PE, about 6 s faster for text-to-image on an RTX 4090 Laptop. On a GPU that's too small the rest of the workflow slows down instead, since ComfyUI can't free llama-server's memory.
 - **max_length:** you can raise it to the official values (16256 for text-to-image, 24000 for editing) without slowing down; it only reserves a little more memory.
 
 llama-server runs as a separate process. With unload_model on, the node unloads ComfyUI's models before each prompt, and llama-server frees its VRAM about a second after answering, so the rest of the workflow gets the GPU back. With it off, both stay loaded, and ComfyUI's models are unloaded only when llama-server has to start. It stops when ComfyUI exits. After ComfyUI starts, or when you change the model, quant, kv_cache, unload_model or mtp setting, the first prompt takes a few seconds longer while llama-server starts.
@@ -149,6 +149,8 @@ The heretic versions download from [pottokao/Qwen-Image-2.1-PE-T2I-Heretic](http
 After setup, the prepared file (the one ending in `.mtp.safetensors`) is an ordinary int8 convrot checkpoint with an MTP head. You can also load it with the stock **Load CLIP** node (type qwen_image), and MTP still works. You only lose the check that the loader and preset modes match.
 
 This backend gets slower as max_length grows, so the presets default to 8192.
+
+It has no unload_model option because it doesn't need one: ComfyUI's dynamic VRAM moves its own models between RAM and VRAM as they're needed, and in testing, keeping them loaded made no difference to its speed.
 
 ## Nodes
 
