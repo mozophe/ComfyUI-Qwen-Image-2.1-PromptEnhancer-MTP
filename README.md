@@ -288,7 +288,7 @@ The llama.cpp backend only runs on NVIDIA GPUs under Windows or Linux (x64), and
 <details>
 <summary><b>llama.cpp backend: out of VRAM</b></summary>
 
-Use quant Q4_K_M, set kv_cache to q8_0, lower max_length, or use fewer input images. The error shows the last lines of llama-server's log, which is saved as `llama-server.log` in ComfyUI's temp folder.
+Use quant Q4_K_M, set kv_cache to q8_0, set mtp to off on the Prompt Enhancer node (slower; llama.cpp then skips loading the MTP head), lower max_length, or use fewer input images. The error shows the last lines of llama-server's log, which is saved as `llama-server.log` in ComfyUI's temp folder.
 </details>
 
 <details>
