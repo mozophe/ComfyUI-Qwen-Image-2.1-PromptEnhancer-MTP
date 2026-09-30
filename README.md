@@ -24,7 +24,7 @@
 
 Qwen-Image 2.1 works best with long, detailed prompts. Its official prompt enhancer (PE) writes them for you: give it a short idea or edit instruction, and it returns a detailed prompt.
 
-This extension runs the PE inside ComfyUI with Qwen's own system prompts and settings, and makes it faster with **multi-token prediction (MTP)**: about **1.35×** for text-to-image and **1.65×** for image editing.
+This extension runs the PE inside ComfyUI with Qwen's own system prompts and settings, and makes it faster with **multi-token prediction (MTP)**: about **1.35×** for text-to-image and **1.65×** for image editing, in tokens generated per second.
 
 - **Automatic setup.** The model downloads and prepares itself on first use.
 - **Official settings.** System prompts and sampling values match Qwen's reference code.
@@ -172,7 +172,7 @@ The `none` preset isn't supported with the llama.cpp backend.
 
 ## Performance
 
-Measured on an RTX 4090 Laptop GPU (16 GB), with one input image for editing.
+Measured on an RTX 4090 Laptop GPU (16 GB), with one input image for editing. Speed-ups compare tokens generated per second (tok/s), not total time: the PE writes answers of different lengths from run to run, so time alone would mix length with speed.
 
 | Mode | max_length | MTP off | MTP on | Speed-up |
 |---|---|---|---|---|
@@ -187,18 +187,18 @@ Peak VRAM use was about 14 GB for text-to-image and 16 GB for editing. With MTP 
 
 ### ComfyUI vs llama.cpp backend
 
-End to end through the nodes, at the official max_length (16256 for text-to-image, 24000 for editing with two images), on the same RTX 4090 Laptop. Each row is 6 prompts, each followed by the Qwen-Image 2.1 diffusion workflow (25 steps, 1024²). The PE time includes everything the backend does, such as llama.cpp waking up and freeing VRAM.
+End to end through the nodes, at the official max_length (16256 for text-to-image, 24000 for editing with two images), on the same RTX 4090 Laptop. Each row is 6 prompts, each followed by the Qwen-Image 2.1 diffusion workflow (25 steps, 1024²). The PE time includes everything the backend does, such as llama.cpp waking up and freeing VRAM. Tokens/s is the answer's tokens divided by that PE time, and Speed-up is Tokens/s relative to the ComfyUI backend with MTP on, the default setup.
 
-| Mode | Backend | MTP | PE time | Tokens/s | Image total |
-|---|---|---|---|---|---|
-| Text-to-image | ComfyUI (int8) | on | 52 s | 34 | 71 s |
-| Text-to-image | ComfyUI (int8) | off | 75 s | 24 | 94 s |
-| Text-to-image | **llama.cpp (Q8_0)** | **on** | **32 s** | **47** | **49 s** |
-| Text-to-image | llama.cpp (Q8_0) | off | 40 s | 42 | 57 s |
-| Editing | ComfyUI (int8) | on | 105 s | 33 | 148 s |
-| Editing | ComfyUI (int8) | off | 170 s | 19 | 213 s |
-| Editing | **llama.cpp (Q8_0)** | **on** | **55 s** | **68** | **97 s** |
-| Editing | llama.cpp (Q8_0) | off | 79 s | 47 | 122 s |
+| Mode | Backend | MTP | PE time | Tokens/s | Speed-up | Image total |
+|---|---|---|---|---|---|---|
+| Text-to-image | ComfyUI (int8) | on | 52 s | 34 | 1.00× (baseline) | 71 s |
+| Text-to-image | ComfyUI (int8) | off | 75 s | 24 | 0.71× | 94 s |
+| Text-to-image | **llama.cpp (Q8_0)** | **on** | **32 s** | **47** | **1.38×** | **49 s** |
+| Text-to-image | llama.cpp (Q8_0) | off | 40 s | 42 | 1.24× | 57 s |
+| Editing | ComfyUI (int8) | on | 105 s | 33 | 1.00× (baseline) | 148 s |
+| Editing | ComfyUI (int8) | off | 170 s | 19 | 0.58× | 213 s |
+| Editing | **llama.cpp (Q8_0)** | **on** | **55 s** | **68** | **2.06×** | **97 s** |
+| Editing | llama.cpp (Q8_0) | off | 79 s | 47 | 1.42× | 122 s |
 
 The two backends write answers of slightly different lengths; at equal length, llama.cpp finishes an image about 1.27× (text-to-image) to 1.6× (editing) sooner. With llama.cpp, max_length 8192, 16256 and 24000 gave the same speed.
 
