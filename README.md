@@ -31,7 +31,7 @@ This extension runs the PE inside ComfyUI with Qwen's own system prompts and set
 - **Ready-to-use output.** The rewritten prompt comes out on its own, separate from the model's reasoning.
 - **Multi-image editing.** Up to 10 input images, any size.
 - **Heretic versions.** Community abliterated fine-tunes that refuse less, for both t2i and i2i.
-- **Optional llama.cpp backend.** On NVIDIA GPUs (Windows or Linux), runs the PE up to about 2× faster per token; an edited image finishes about a minute sooner. See [llama.cpp backend](#llamacpp-backend-faster-nvidia).
+- **Optional llama.cpp backend.** On NVIDIA GPUs (Windows or Linux), runs the PE at about 1.4× (text-to-image) to 2.1× (editing) the tok/s of the ComfyUI backend, both with MTP on. See [llama.cpp backend](#llamacpp-backend-faster-nvidia).
 
 ## Requirements
 
@@ -149,7 +149,7 @@ The presets use the official values from Qwen's [prompt_rewrite](https://github.
 
 The loader can run the prompt enhancer with [llama.cpp](https://github.com/ggml-org/llama.cpp) instead of inside ComfyUI: set **backend** to `llama.cpp`. The generator node, its presets and its outputs stay the same.
 
-**Why it was added:** on NVIDIA GPUs llama.cpp generates the enhanced prompt much faster, 1.4× (text-to-image) to 2.1× (editing with two images) per token, so an image finishes about 15 s (text-to-image) to 55 s (editing) sooner on an RTX 4090 Laptop. Its speed also doesn't drop with a higher max_length, so the official lengths cost nothing extra. Its Q8_0 model matches the quality of the int8 model the ComfyUI backend uses. See [Performance](#performance) for the measurements.
+**Why it was added:** on NVIDIA GPUs llama.cpp generates the enhanced prompt much faster: on an RTX 4090 Laptop with MTP on, 47 vs 34 tok/s for text-to-image (1.4×) and 68 vs 33 tok/s for editing with two images (2.1×). Its speed also doesn't drop with a higher max_length, so the official lengths cost nothing extra. Its Q8_0 model matches the quality of the int8 model the ComfyUI backend uses. See [Performance](#performance) for the measurements.
 
 **Requirements:** an NVIDIA GPU with driver 528.33 or newer on Windows, or 525.60.13 or newer on Linux (x64). Other GPUs use the ComfyUI backend.
 
@@ -187,20 +187,20 @@ Peak VRAM use was about 14 GB for text-to-image and 16 GB for editing. With MTP 
 
 ### ComfyUI vs llama.cpp backend
 
-End to end through the nodes, at the official max_length (16256 for text-to-image, 24000 for editing with two images), on the same RTX 4090 Laptop. Each row is 6 prompts, each followed by the Qwen-Image 2.1 diffusion workflow (25 steps, 1024²). The PE time includes everything the backend does, such as llama.cpp waking up and freeing VRAM. Tokens/s is the answer's tokens divided by that PE time, and Speed-up is Tokens/s relative to the ComfyUI backend with MTP on, the default setup.
+End to end through the nodes, at the official max_length (16256 for text-to-image, 24000 for editing with two images), on the same RTX 4090 Laptop. Each row is 6 prompts, each followed by the Qwen-Image 2.1 diffusion workflow (25 steps, 1024²). The PE time includes everything the backend does, such as llama.cpp waking up and freeing VRAM. Tokens/s is the answer's tokens divided by that PE time, and Speed-up is Tokens/s relative to the ComfyUI backend with MTP off.
 
-| Mode | Backend | MTP | PE time | Tokens/s | Speed-up | Image total |
-|---|---|---|---|---|---|---|
-| Text-to-image | ComfyUI (int8) | on | 52 s | 34 | 1.00× (baseline) | 71 s |
-| Text-to-image | ComfyUI (int8) | off | 75 s | 24 | 0.71× | 94 s |
-| Text-to-image | **llama.cpp (Q8_0)** | **on** | **32 s** | **47** | **1.38×** | **49 s** |
-| Text-to-image | llama.cpp (Q8_0) | off | 40 s | 42 | 1.24× | 57 s |
-| Editing | ComfyUI (int8) | on | 105 s | 33 | 1.00× (baseline) | 148 s |
-| Editing | ComfyUI (int8) | off | 170 s | 19 | 0.58× | 213 s |
-| Editing | **llama.cpp (Q8_0)** | **on** | **55 s** | **68** | **2.06×** | **97 s** |
-| Editing | llama.cpp (Q8_0) | off | 79 s | 47 | 1.42× | 122 s |
+| Mode | Backend | MTP | PE time | Tokens/s | Speed-up |
+|---|---|---|---|---|---|
+| Text-to-image | ComfyUI (int8) | off | 75 s | 24 | 1.00× (baseline) |
+| Text-to-image | ComfyUI (int8) | on | 52 s | 34 | 1.42× |
+| Text-to-image | llama.cpp (Q8_0) | off | 40 s | 42 | 1.75× |
+| Text-to-image | **llama.cpp (Q8_0)** | **on** | **32 s** | **47** | **1.96×** |
+| Editing | ComfyUI (int8) | off | 170 s | 19 | 1.00× (baseline) |
+| Editing | ComfyUI (int8) | on | 105 s | 33 | 1.74× |
+| Editing | llama.cpp (Q8_0) | off | 79 s | 47 | 2.47× |
+| Editing | **llama.cpp (Q8_0)** | **on** | **55 s** | **68** | **3.58×** |
 
-The two backends write answers of slightly different lengths; at equal length, llama.cpp finishes an image about 1.27× (text-to-image) to 1.6× (editing) sooner. With llama.cpp, max_length 8192, 16256 and 24000 gave the same speed.
+The rest of the workflow took the same time with either backend (about 18 s for text-to-image, 43 s for editing), so only the PE time differs. With llama.cpp, max_length 8192, 16256 and 24000 gave the same speed.
 
 ## Troubleshooting
 
@@ -253,7 +253,7 @@ This extension depends on parts of ComfyUI that can change between versions. Ple
 
 ## Changelog
 
-- **1.2.0** (unreleased): optional llama.cpp backend for NVIDIA GPUs (Windows/Linux) with Q8_0 and Q4_K_M GGUFs and MTP: about 1.4× (text-to-image) to 2.1× (editing) faster prompt enhancement.
+- **1.2.0** (unreleased): optional llama.cpp backend for NVIDIA GPUs (Windows/Linux) with Q8_0 and Q4_K_M GGUFs and MTP: about 1.4× (text-to-image) to 2.1× (editing) the tok/s of the ComfyUI backend.
 - **1.1.2** (2026-09-24): max_length defaults to 8192 instead of 16256/24000, which is faster, and answers fit well within it.
 - **1.1.1** (2026-09-24): the PE seed defaults to a fixed 42; refreshed sample workflows.
 - **1.1.0** (2026-09-24): heretic t2i and i2i models.
