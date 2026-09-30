@@ -64,4 +64,43 @@ assert ls.SERVER.calls == ["ensure", "stream"], ls.SERVER.calls
 ls.SERVER = FakeServer()
 assert ls.generate(kept, "P", [], preset, 1, "auto") == "ok"
 assert ls.SERVER.calls == ["ensure", "unload_comfy", "start", "stream"], ls.SERVER.calls
+
+
+# the console shows a "Generating tokens" bar with the live tok/s, like the ComfyUI backend's decoder
+class FakeBar:
+    bars = []
+
+    def __init__(self, total, desc):
+        self.total, self.desc, self.n, self.closed = total, desc, 0, False
+        FakeBar.bars.append(self)
+
+    def update(self, n):
+        self.n += n
+
+    def close(self):
+        self.closed = True
+
+
+ls.tqdm = FakeBar
+ls.SERVER = FakeServer(running=True)
+assert ls.generate(kept, "P", [], preset, 1, "auto") == "ok"
+bar, = FakeBar.bars
+assert (bar.total, bar.desc, bar.n, bar.closed) == (64, "Generating tokens", 1, True), vars(bar)
+
+
+class BrokenServer(FakeServer):
+    @contextlib.contextmanager
+    def stream(self, body):
+        raise RuntimeError("llama.cpp backend: the connection to llama-server failed")
+        yield
+
+
+FakeBar.bars.clear()
+ls.SERVER = BrokenServer(running=True)
+try:
+    ls.generate(kept, "P", [], preset, 1, "auto")
+    raise AssertionError("no error")
+except RuntimeError:
+    pass
+assert FakeBar.bars[0].closed  # a failed generation doesn't leave a dangling bar in the console
 print("ok")

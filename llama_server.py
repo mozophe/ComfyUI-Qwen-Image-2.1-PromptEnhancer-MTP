@@ -21,6 +21,7 @@ from pathlib import Path
 import numpy as np
 import torch
 from PIL import Image
+from tqdm import tqdm
 import folder_paths
 import comfy.model_management
 import comfy.utils
@@ -295,15 +296,19 @@ def generate(handle, text, images, preset, seed, mtp):
     pbar = comfy.utils.ProgressBar(preset["max_length"])
     done = [0]
 
-    def on_tokens(n):
-        done[0] += n
-        pbar.update_absolute(min(done[0], preset["max_length"]))
-
     # b11160 loses a request that arrives while the server is falling asleep (its queue only wakes for a request that finds
     # it already asleep), so send only to a sleeping server: free after a generation, one extra load after a start.
     # With unload_model off the server never sleeps, so there is nothing to wait for.
     if handle.unload:
         SERVER.wait_asleep()
+    # the console bar with the live tok/s, as the ComfyUI backend's decoder shows (comfy/text_encoders/qwen35.py)
+    console = tqdm(total=preset["max_length"], desc="Generating tokens")
+
+    def on_tokens(n):
+        done[0] += n
+        pbar.update_absolute(min(done[0], preset["max_length"]))
+        console.update(n)
+
     try:
         with SERVER.stream(body) as lines:
             result = read_stream(lines, on_tokens, mm.processing_interrupted)
@@ -311,6 +316,8 @@ def generate(handle, text, images, preset, seed, mtp):
         if not str(e).startswith("llama.cpp backend:"):  # a server error chunk from read_stream
             raise SERVER.fail(str(e)) from e
         raise
+    finally:
+        console.close()
     if handle.unload:
         SERVER.wait_asleep()
     if result is None:  # closing the stream above made the server cancel the task
