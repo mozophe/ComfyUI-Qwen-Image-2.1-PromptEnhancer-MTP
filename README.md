@@ -27,9 +27,9 @@ Qwen-Image 2.1 works best with long, detailed prompts. Its official prompt enhan
 This extension runs the PE with Qwen's own system prompts and settings, on one of two backends:
 
 - **llama.cpp (recommended on NVIDIA).** Runs the PE in a separate llama-server process. With MTP it generates about **2.0×** (text-to-image) to **3.5×** (editing) the tokens per second of the ComfyUI backend without MTP, at the same quality.
-- **ComfyUI (default).** Runs the PE inside ComfyUI on any GPU ComfyUI supports. With MTP, about **1.4×** (text-to-image) to **1.7×** (editing) the tokens per second of MTP off.
+- **ComfyUI (default, for backward compatibility).** Runs the PE inside ComfyUI on any GPU ComfyUI supports, as versions before 1.2.0 did. With MTP, about **1.4×** (text-to-image) to **1.7×** (editing) the tokens per second of MTP off.
 
-ComfyUI stays the default so the node works on every GPU and existing workflows keep running unchanged. On an NVIDIA GPU, switch the loader's **backend** to `llama.cpp`.
+ComfyUI is the default only for backward compatibility: workflows saved with versions before 1.2.0 have no backend setting and keep running exactly as before, on any GPU. On an NVIDIA GPU, switch the loader's **backend** to `llama.cpp`.
 
 - **Automatic setup.** The model, and llama-server for the llama.cpp backend, download on first use.
 - **Official settings.** System prompts and sampling values match Qwen's reference code.
@@ -43,7 +43,7 @@ ComfyUI stays the default so the node works on every GPU and existing workflows 
 - **ComfyUI:** v0.37.0 or newer
 - **System RAM:** 32 GB recommended
 
-| | llama.cpp (recommended) | ComfyUI (default) |
+| | llama.cpp (recommended) | ComfyUI (default, for backward compatibility) |
 |---|---|---|
 | GPU | NVIDIA, Windows or Linux x64; driver 528.33+ (Windows) or 525.60.13+ (Linux) | Any GPU ComfyUI supports |
 | VRAM | 16 GB for Q8_0; 8–12 GB for Q4_K_M | 16 GB recommended; smaller GPUs work, but much more slowly |
@@ -137,9 +137,9 @@ llama-server runs as a separate process. The node unloads ComfyUI's models befor
 
 The `none` preset isn't supported with the llama.cpp backend.
 
-### ComfyUI (default)
+### ComfyUI (default, for backward compatibility)
 
-Runs the prompt enhancer inside ComfyUI with its own Qwen3.5 text encoder and MTP decoding, on any GPU ComfyUI supports. It is the default so the node works everywhere and workflows saved before the backend option keep running.
+Runs the prompt enhancer inside ComfyUI with its own Qwen3.5 text encoder and MTP decoding, on any GPU ComfyUI supports. It is the default for backward compatibility: this is how versions before 1.2.0 ran the PE, so their workflows keep working unchanged, and it runs on GPUs llama.cpp doesn't support here.
 
 On first use it downloads the prompt enhancer from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1/tree/main/text_encoders) (about 9.5 GB) and the MTP head from [Qwen/Qwen3.5-9B](https://huggingface.co/Qwen/Qwen3.5-9B) (about 0.5 GB), then combines them into a prepared copy in ComfyUI/models/text_encoders/Qwen-Image-2.1-PE/: the int8 convrot enhancer with the MTP head added. If you already have the Comfy-Org PE checkpoint in a text_encoders folder, it is used instead of downloading.
 
@@ -158,7 +158,7 @@ Loads the prompt enhancer, ready for fast MTP generation.
 | Input | Description |
 |---|---|
 | model | t2i for text-to-image, i2i for editing. The heretic versions are community abliterated fine-tunes that refuse less. |
-| backend | llama.cpp (recommended on NVIDIA) runs the PE in a separate llama-server process, much faster. ComfyUI (default) runs it inside ComfyUI on any GPU. See [Backends](#backends). |
+| backend | llama.cpp (recommended on NVIDIA) runs the PE in a separate llama-server process, much faster. ComfyUI (default, for backward compatibility with versions before 1.2.0) runs it inside ComfyUI on any GPU. See [Backends](#backends). |
 | quant | llama.cpp only: Q8_0 (9.8 GB, for 16 GB GPUs and up) or Q4_K_M (6.0 GB, for 8–12 GB GPUs) |
 | kv_cache | llama.cpp only: f16 (default) or q8_0, which stores the KV cache at 8 bits to save memory |
 
@@ -295,7 +295,7 @@ This extension depends on parts of ComfyUI that can change between versions. Ple
 ## Changelog
 
 - **1.2.0** (unreleased): llama.cpp backend, recommended on NVIDIA GPUs.
-  - New **backend** option on the loader: `llama.cpp` runs the PE in a separate llama-server process on NVIDIA GPUs (Windows/Linux x64). ComfyUI stays the default, so existing workflows run unchanged.
+  - New **backend** option on the loader: `llama.cpp` runs the PE in a separate llama-server process on NVIDIA GPUs (Windows/Linux x64). ComfyUI stays the default for backward compatibility, so workflows from earlier versions run unchanged.
   - Speed, in tok/s against the ComfyUI backend without MTP: with MTP and Q8_0, about 2.0× (text-to-image) to 3.5× (editing) at the official max_length, and 1.5× to 2.4× at the node's 8192 default; Q4_K_M reaches 2.7× to 4.4× at the official max_length. Its speed doesn't depend on max_length. See [Performance](#performance).
   - GGUFs with the MTP head for all four models (t2i, i2i and both heretic versions) at [mozophe/Qwen-Image-2.1-PE-MTP-GGUF](https://huggingface.co/mozophe/Qwen-Image-2.1-PE-MTP-GGUF): Q8_0 for 16 GB GPUs, Q4_K_M for 8–12 GB, and one shared vision file for editing. GGUFs already under models/LLM are used where they are.
   - llama-server downloads on first use: a pinned llama.cpp release, CUDA 12 or 13 build chosen from the driver, checked against its SHA-256.
