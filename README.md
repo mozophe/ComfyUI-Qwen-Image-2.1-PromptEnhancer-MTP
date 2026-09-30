@@ -138,7 +138,7 @@ The GGUFs include the MTP head, so MTP works here too. The model card lists how 
 
 - **quant:** Q8_0 on 16 GB GPUs and up. Q4_K_M below 16 GB, down to 8 GB; it is also faster, with a small quality cost, so it is worth trying on bigger GPUs too.
 - **kv_cache:** f16 by default. q8_0 saves about 0.3–0.6 GB (more with longer prompts, such as several input images) at almost no quality cost. Use it on 8 GB GPUs when editing with more than two images.
-- **vision_on_cpu:** off by default. On, editing keeps the vision part in system RAM, saving about 1.2 GB of VRAM, but reading the images takes much longer: about 13 s per image on an RTX 4090 Laptop's CPU. Use it only on 8 GB GPUs editing with several images, after the steps in [Troubleshooting](#troubleshooting).
+- **vision_on_cpu:** off by default. On, editing keeps the vision part in system RAM, saving about 1.2 GB of VRAM, but reading the images takes much longer: about 13 s per image on an RTX 4090 Laptop's CPU. Use it when editing runs out of VRAM, on any GPU and quant, after the other steps in [Troubleshooting](#troubleshooting).
 - **unload_model:** on by default: the PE's VRAM is freed after each prompt so the rest of the workflow gets the GPU. Turn it off only if your GPU has room for both the PE (about 10 GB for Q8_0, 6 GB for Q4_K_M) and your other models, typically 24–32 GB or more. Each prompt then skips reloading the PE, about 6 s faster for text-to-image on an RTX 4090 Laptop. On a GPU that's too small the rest of the workflow slows down instead, since ComfyUI can't free llama-server's memory.
 - **max_length:** you can raise it to the official values (16256 for text-to-image, 24000 for editing) without slowing down; it only reserves a little more memory.
 
@@ -293,7 +293,16 @@ The llama.cpp backend only runs on NVIDIA GPUs under Windows or Linux (x64), and
 <details>
 <summary><b>llama.cpp backend: out of VRAM</b></summary>
 
-Try these in order, cheapest first: use quant Q4_K_M; set kv_cache to q8_0; lower max_length back to 8192 if you raised it (8192 fit every answer in the [Performance](#performance) tests); set mtp to off on the Prompt Enhancer node (slower; llama.cpp then skips loading the MTP head); turn on vision_on_cpu on the loader when editing (about 1.2 GB less, but much slower image reading); use fewer input images. The error shows the last lines of llama-server's log, which is saved as `llama-server.log` in ComfyUI's temp folder.
+Try these in order, cheapest first:
+
+1. Set **quant** to Q4_K_M.
+2. Set **kv_cache** to q8_0.
+3. Lower **max_length** back to 8192 if you raised it (8192 fit every answer in the [Performance](#performance) tests).
+4. Set **mtp** to off on the Prompt Enhancer node. It's slower, but llama.cpp then skips loading the MTP head.
+5. When editing, turn on **vision_on_cpu** on the loader. It saves about 1.2 GB, but reading the images takes much longer.
+6. Use fewer input images.
+
+The error shows the last lines of llama-server's log, which is saved as `llama-server.log` in ComfyUI's temp folder.
 </details>
 
 <details>
@@ -316,7 +325,7 @@ This extension depends on parts of ComfyUI that can change between versions. Ple
   - GGUFs with the MTP head for all four models (t2i, i2i and both heretic versions) at [mozophe/Qwen-Image-2.1-PE-MTP-GGUF](https://huggingface.co/mozophe/Qwen-Image-2.1-PE-MTP-GGUF): Q8_0 for 16 GB GPUs, Q4_K_M for 8 GB and up, and one shared vision file for editing. GGUFs already under models/LLM are used where they are.
   - Smaller GPUs: with Q4_K_M, the enhancer runs on NVIDIA GPUs with 8 GB or more without slowing down.
   - llama-server downloads on first use: a pinned llama.cpp release, CUDA 12 or 13 build chosen from the driver, checked against its SHA-256.
-  - **vision_on_cpu** on the loader keeps the vision part in system RAM when editing, saving about 1.2 GB of VRAM at the cost of much slower image reading, for 8 GB GPUs editing with several images.
+  - **vision_on_cpu** on the loader keeps the vision part in system RAM when editing, saving about 1.2 GB of VRAM at the cost of much slower image reading, for editing that runs out of VRAM on any GPU.
   - llama-server frees its VRAM after each prompt and stops with ComfyUI. On GPUs with room for both, turn off **unload_model** to keep it and ComfyUI's models loaded between prompts.
   - The console shows the same "Generating tokens" progress bar with the live speed (tokens per second) as the ComfyUI backend.
   - The sample workflows use the llama.cpp backend, and their notes list what each backend downloads and the settings for smaller GPUs.

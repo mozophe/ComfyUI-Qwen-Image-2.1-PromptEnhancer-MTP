@@ -136,7 +136,7 @@ class LoadQwenImage21PE(io.ComfyNode):
                                                                                         "use it on 8 GB GPUs when editing with more than two images."),
                             io.Boolean.Input("vision_on_cpu", default=False, tooltip="i2i only: keeps the vision part in system RAM, "
                                              "saving about 1.2 GB of VRAM, but reading images takes much longer (about 13 s per image). "
-                                             "For 8 GB GPUs editing with several images."),
+                                             "Use it when editing runs out of VRAM, on any GPU."),
                             io.Boolean.Input("unload_model", default=True, tooltip="Frees the PE's VRAM after each prompt so the rest of "
                                              "the workflow gets it. Turn off only if your GPU has room for both the PE (about 10 GB for Q8_0, "
                                              "6 GB for Q4_K_M) and your other models: each prompt then skips reloading the PE."),
