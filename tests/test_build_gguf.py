@@ -18,4 +18,7 @@ idx = {"metadata": {"total_size": 1}, "weight_map": {"model.a": "model-00001.saf
 out = bg.add_mtp_to_index(idx, ["mtp.fc.weight", "mtp.norm.weight"])
 assert out["weight_map"] == {"model.a": "model-00001.safetensors", "mtp.fc.weight": "model-mtp.safetensors", "mtp.norm.weight": "model-mtp.safetensors"}
 assert "mtp.fc.weight" not in idx["weight_map"]
+# llama-perplexity's summary line, also when Windows decodes its "±" as cp1252 ("Â±")
+assert bg.parse_kld("x\nMean    KLD:   0.005402 ±   0.001396\ny") == 0.005402
+assert bg.parse_kld("Mean    KLD:   0.005402 Â±   0.001396") == 0.005402
 print("ok")

@@ -3,7 +3,7 @@
 # usage: python tools/build_gguf.py <model> <llama.cpp dir> <work dir> <eval text> [--upload]
 #   <llama.cpp dir>: llama.cpp source at tag b11160 with its binaries in bin/ (llama-quantize, llama-perplexity, llama-server)
 #   run with a Python that has transformers >= 5 and torch (e.g. ComfyUI's venv), PYTHONPATH is set to <llama.cpp dir>/gguf-py
-import copy, json, os, subprocess, sys
+import copy, json, os, re, subprocess, sys
 from pathlib import Path
 
 SOURCES = {"t2i": "Qwen/Qwen-Image-2.1-PE-T2I", "i2i": "Qwen/Qwen-Image-2.1-PE-I2I",
@@ -30,11 +30,15 @@ def run(cmd, **kw):
     subprocess.run([str(c) for c in cmd], check=True, **kw)
 
 
+def parse_kld(output):
+    # "Mean    KLD:   0.005402 ±   0.001396"; the "±" may arrive mis-decoded, so read only the number
+    return float(re.search(r"Mean\s+KLD:\s*([0-9.eE+-]+)", output).group(1))
+
+
 def kld(ll, gguf, base_logits, eval_text):
     out = subprocess.run([str(ll / "bin" / "llama-perplexity"), "-m", gguf, "-f", eval_text, "-c", "4096", "-b", "4096", "-fa", "on",
-                          "--kl-divergence-base", base_logits, "--kl-divergence"], capture_output=True, text=True)
-    line = next(l for l in (out.stdout + out.stderr).splitlines() if "Mean    KLD" in l)
-    return float(line.split(":")[1].split("±")[0])
+                          "--kl-divergence-base", base_logits, "--kl-divergence"], capture_output=True, text=True, errors="replace")
+    return parse_kld(out.stdout + out.stderr)
 
 
 def main(model, ll, work, eval_text, upload):
