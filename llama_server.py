@@ -288,6 +288,9 @@ def generate(handle, text, images, preset, seed, mtp):
         done[0] += n
         pbar.update_absolute(min(done[0], preset["max_length"]))
 
+    # b11160 loses a request that arrives while the server is falling asleep (its queue only wakes for a request that finds
+    # it already asleep), so send only to a sleeping server: free after a generation, one extra load after a start
+    SERVER.wait_asleep()
     try:
         with SERVER.stream(body) as lines:
             result = read_stream(lines, on_tokens, mm.processing_interrupted)
