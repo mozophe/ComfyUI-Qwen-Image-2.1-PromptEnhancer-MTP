@@ -24,12 +24,14 @@
 
 Qwen-Image 2.1 works best with long, detailed prompts. Its official prompt enhancer (PE) writes them for you: give it a short idea or edit instruction, and it returns a detailed prompt.
 
-This extension runs the PE with Qwen's own system prompts and settings, on one of two backends:
+This extension runs the PE with Qwen's own system prompts and settings, on one of two backends chosen on the loader:
 
-- **llama.cpp (recommended on NVIDIA).** Runs the PE in a separate llama-server process. With MTP it generates about **2.0×** (text-to-image) to **3.5×** (editing) the tokens per second of the ComfyUI backend without MTP, at the same quality.
-- **ComfyUI (default, for backward compatibility).** Runs the PE inside ComfyUI on any GPU ComfyUI supports, as versions before 1.2.0 did. With MTP, about **1.4×** (text-to-image) to **1.7×** (editing) the tokens per second of MTP off.
+- **llama.cpp**: for NVIDIA GPUs. It runs the PE in a separate llama-server process with MTP, at about **2×** (text-to-image) to **3.5×** (editing) the speed of ComfyUI's own text generation, at the same quality.
+- **ComfyUI**: for any other GPU. It runs the PE inside ComfyUI with MTP, as versions before 1.2.0 did, at about **1.4×** (text-to-image) to **1.7×** (editing) the speed of ComfyUI's own text generation. It is the loader's default so older workflows keep working unchanged; on an NVIDIA GPU, switch to llama.cpp.
 
-ComfyUI is the default only for backward compatibility: workflows saved with versions before 1.2.0 have no backend setting and keep running exactly as before, on any GPU. On an NVIDIA GPU, switch the loader's **backend** to `llama.cpp`.
+Speeds are tokens per second at the official settings; see [Performance](#performance).
+
+**Features**
 
 - **Automatic setup.** The model, and llama-server for the llama.cpp backend, download on first use.
 - **Official settings.** System prompts and sampling values match Qwen's reference code.
