@@ -60,9 +60,6 @@ Speeds are tokens per second at the official settings; see [Performance](#perfor
 
 ### ComfyUI Manager
 
-> [!NOTE]
-> The Comfy Registry hasn't reviewed the numbered releases yet, so the Manager lists the node as **nightly**. That installs the latest release straight from GitHub, the same code as the numbered version.
-
 Open **Manager → Custom Nodes Manager**, search for **Qwen-Image 2.1 Prompt Enhancer (MTP)**, click **Install**, and restart ComfyUI. The Manager installs the requirements too. To update, use **Update** in the same place.
 
 ### Manual
