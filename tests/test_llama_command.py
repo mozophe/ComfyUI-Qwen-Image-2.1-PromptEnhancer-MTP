@@ -29,6 +29,11 @@ i2i = LlamaPE("i2i", "i.gguf", "v.gguf", "Q4_K_M", "q8_0", "srv")
 cmd = server_command(i2i, 16384, "off", "mmap", 9000)
 assert cmd[cmd.index("--mmproj") + 1] == "v.gguf" and "--spec-type" not in cmd
 assert cmd[cmd.index("-ctk") + 1] == "q8_0" and cmd[cmd.index("-ctv") + 1] == "q8_0" and cmd[cmd.index("--load-mode") + 1] == "mmap"
+assert "--no-mmproj-offload" not in cmd and not i2i.vision_cpu  # vision on the GPU by default
+# vision_on_cpu: the vision part stays in system RAM (about 1.2 GB less VRAM, slower image encoding); no-op without one
+vcpu = LlamaPE("i2i", "i.gguf", "v.gguf", "Q4_K_M", "q8_0", "srv", vision_cpu=True)
+assert "--no-mmproj-offload" in server_command(vcpu, 16384, "off", "mmap", 9000)
+assert "--no-mmproj-offload" not in server_command(LlamaPE("t2i", "t.gguf", None, "Q8_0", "f16", "srv.exe", vision_cpu=True), 12288, "auto", "dio", 8123)
 # unload_model off: the server never sleeps, so the model stays in VRAM between prompts
 kept = LlamaPE("t2i", "t.gguf", None, "Q8_0", "f16", "srv.exe", unload=False)
 assert "--sleep-idle-seconds" not in server_command(kept, 12288, "auto", "dio", 8123)
@@ -43,4 +48,5 @@ assert needs_restart(True, k, 16384, server_key(i2i, "auto"), 4096)             
 assert needs_restart(True, k, 16384, server_key(t2i, "off"), 4096)                                           # MTP change
 assert needs_restart(True, k, 16384, server_key(LlamaPE("t2i", "t.gguf", None, "Q8_0", "q8_0", "srv.exe"), "auto"), 4096)  # KV cache change
 assert needs_restart(True, k, 16384, server_key(kept, "auto"), 4096)                                         # unload_model toggled
+assert needs_restart(True, server_key(i2i, "off"), 16384, server_key(vcpu, "off"), 4096)                     # vision_on_cpu toggled
 print("ok")

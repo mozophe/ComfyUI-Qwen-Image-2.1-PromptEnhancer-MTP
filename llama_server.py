@@ -1,6 +1,6 @@
 # llama.cpp backend runtime: one llama-server process that sleeps between generations (its VRAM freed, the process kept)
-# unless unload_model is off, restarted when the model, vision file, KV cache type, MTP setting, unload_model or needed
-# context changes
+# unless unload_model is off, restarted when the model, vision file, KV cache type, MTP setting, unload_model,
+# vision_on_cpu or needed context changes
 import atexit
 import base64
 import contextlib
@@ -59,7 +59,7 @@ def mtp_args(mtp):
 
 
 def server_key(handle, mtp):
-    return (handle.exe, handle.model, handle.mmproj, handle.kv_cache, mtp, handle.unload)
+    return (handle.exe, handle.model, handle.mmproj, handle.kv_cache, mtp, handle.unload, handle.vision_cpu)
 
 
 def server_command(handle, ctx, mtp, load_mode, port):
@@ -67,7 +67,7 @@ def server_command(handle, ctx, mtp, load_mode, port):
            "-ctk", handle.kv_cache, "-ctv", handle.kv_cache] + (["--sleep-idle-seconds", "1"] if handle.unload else []) + [
            "--load-mode", load_mode, "--host", "127.0.0.1", "--port", str(port), "--no-webui"]
     if handle.mmproj:
-        cmd += ["--mmproj", handle.mmproj]
+        cmd += ["--mmproj", handle.mmproj] + (["--no-mmproj-offload"] if handle.vision_cpu else [])
     return cmd + mtp_args(mtp)
 
 
@@ -117,7 +117,7 @@ def read_stream(lines, on_tokens, interrupted):
 
 
 def failure_message(what, log_tail, log_path):
-    advice = ("Out of VRAM: try quant Q4_K_M, kv_cache: q8_0, a lower max_length, or fewer images."
+    advice = ("Out of VRAM: try quant Q4_K_M, kv_cache: q8_0, a lower max_length, vision_on_cpu, or fewer images."
               if any(m in log_tail.lower() for m in OOM_MARKERS) else f"Full log: {log_path}")
     return f"llama.cpp backend: {what}. {advice}\nLast lines of the llama-server log:\n{log_tail}"
 

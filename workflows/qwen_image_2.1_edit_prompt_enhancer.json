@@ -41,6 +41,7 @@
         "llama.cpp",
         "Q8_0",
         "f16",
+        false,
         true
       ],
       "widgets_values_named": {
@@ -48,6 +49,7 @@
         "backend": "llama.cpp",
         "backend.quant": "Q8_0",
         "backend.kv_cache": "f16",
+        "backend.vision_on_cpu": false,
         "backend.unload_model": true
       }
     },

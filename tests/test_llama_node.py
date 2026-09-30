@@ -16,9 +16,9 @@ schema = node.LoadQwenImage21PE.define_schema()
 backend = [i for i in schema.inputs if i.id == "backend"][0]
 assert backend.optional and [o.key for o in backend.options] == ["ComfyUI", "llama.cpp"]
 llama_opt = backend.options[1]
-assert [i.id for i in llama_opt.inputs] == ["quant", "kv_cache", "unload_model"]
+assert [i.id for i in llama_opt.inputs] == ["quant", "kv_cache", "vision_on_cpu", "unload_model"]
 assert list(llama_opt.inputs[0].options) == ["Q8_0", "Q4_K_M"] and list(llama_opt.inputs[1].options) == ["f16", "q8_0"]
-assert llama_opt.inputs[2].default is True
+assert llama_opt.inputs[2].default is False and llama_opt.inputs[3].default is True
 
 # old workflows / API prompts without backend, and backend ComfyUI, take the ComfyUI path (Review Focus 1)
 seen = []
@@ -29,12 +29,13 @@ for b in (None, {"backend": "ComfyUI"}):
     assert out.args[0].pe_task == "t2i"
 assert seen == ["t2i", "t2i"]
 # backend llama.cpp returns the handle from load_llama
-node.load_llama = lambda model, quant, kv, unload: LlamaPE("i2i", "m", "v", quant, kv, "srv", unload)
-h = node.LoadQwenImage21PE.execute("i2i", {"backend": "llama.cpp", "quant": "Q4_K_M", "kv_cache": "q8_0", "unload_model": False}).args[0]
-assert isinstance(h, LlamaPE) and (h.quant, h.kv_cache, h.unload) == ("Q4_K_M", "q8_0", False)
-# llama.cpp workflows saved before unload_model existed keep unloading
+node.load_llama = lambda model, quant, kv, unload, vision_cpu: LlamaPE("i2i", "m", "v", quant, kv, "srv", unload, vision_cpu)
+h = node.LoadQwenImage21PE.execute("i2i", {"backend": "llama.cpp", "quant": "Q4_K_M", "kv_cache": "q8_0", "unload_model": False,
+                                           "vision_on_cpu": True}).args[0]
+assert isinstance(h, LlamaPE) and (h.quant, h.kv_cache, h.unload, h.vision_cpu) == ("Q4_K_M", "q8_0", False, True)
+# llama.cpp workflows saved before unload_model and vision_on_cpu existed keep unloading, with vision on the GPU
 h = node.LoadQwenImage21PE.execute("i2i", {"backend": "llama.cpp", "quant": "Q4_K_M", "kv_cache": "q8_0"}).args[0]
-assert h.unload is True
+assert h.unload is True and h.vision_cpu is False
 
 # generator: a LlamaPE goes to llama_server.generate with the PE prompt (0 image blocks) and the preset
 calls = []
