@@ -134,6 +134,9 @@ class LoadQwenImage21PE(io.ComfyNode):
                             io.Combo.Input("quant", options=list(QUANTS), tooltip="Q8_0: 9.8 GB, for 16 GB GPUs and up. Q4_K_M: 6.0 GB, for 8-12 GB GPUs."),
                             io.Combo.Input("kv_cache", options=list(KV_CACHE), tooltip="q8_0 stores the KV cache at 8 bits, saving about 240 MiB; "
                                                                                         "use it with Q4_K_M on 8 GB GPUs."),
+                            io.Boolean.Input("unload_model", default=True, tooltip="Frees the PE's VRAM after each prompt so the rest of "
+                                             "the workflow gets it. Turn off only if your GPU has room for both the PE (about 10 GB for Q8_0, "
+                                             "6 GB for Q4_K_M) and your other models: each prompt then skips reloading the PE."),
                         ]),
                     ])],
             outputs=[io.Clip.Output()],
@@ -142,7 +145,8 @@ class LoadQwenImage21PE(io.ComfyNode):
     @classmethod
     def execute(cls, model, backend=None) -> io.NodeOutput:
         if backend is not None and backend.get("backend") == "llama.cpp":
-            return io.NodeOutput(load_llama(model, backend["quant"], backend["kv_cache"]))
+            # llama.cpp workflows saved before unload_model existed keep unloading
+            return io.NodeOutput(load_llama(model, backend["quant"], backend["kv_cache"], backend.get("unload_model", True)))
         clip =comfy.sd.load_clip(ckpt_paths=[ensure_model(model)], embedding_directory=folder_paths.get_folder_paths("embeddings"),
                                   clip_type=comfy.sd.CLIPType.QWEN_IMAGE)
         clip.pe_task = PE[model].get("task", model)  # lets the enhancer catch a loader/preset mismatch

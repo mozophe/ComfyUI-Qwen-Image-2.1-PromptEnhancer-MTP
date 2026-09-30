@@ -29,6 +29,10 @@ i2i = LlamaPE("i2i", "i.gguf", "v.gguf", "Q4_K_M", "q8_0", "srv")
 cmd = server_command(i2i, 16384, "off", "mmap", 9000)
 assert cmd[cmd.index("--mmproj") + 1] == "v.gguf" and "--spec-type" not in cmd
 assert cmd[cmd.index("-ctk") + 1] == "q8_0" and cmd[cmd.index("-ctv") + 1] == "q8_0" and cmd[cmd.index("--load-mode") + 1] == "mmap"
+# unload_model off: the server never sleeps, so the model stays in VRAM between prompts
+kept = LlamaPE("t2i", "t.gguf", None, "Q8_0", "f16", "srv.exe", unload=False)
+assert "--sleep-idle-seconds" not in server_command(kept, 12288, "auto", "dio", 8123)
+assert t2i.unload  # on by default
 
 k = server_key(t2i, "auto")
 assert not needs_restart(True, k, 16384, k, 12288)           # same everything, enough context: reuse
@@ -38,4 +42,5 @@ assert needs_restart(True, None, 0, k, 4096)                  # nothing running 
 assert needs_restart(True, k, 16384, server_key(i2i, "auto"), 4096)                                          # other model
 assert needs_restart(True, k, 16384, server_key(t2i, "off"), 4096)                                           # MTP change
 assert needs_restart(True, k, 16384, server_key(LlamaPE("t2i", "t.gguf", None, "Q8_0", "q8_0", "srv.exe"), "auto"), 4096)  # KV cache change
+assert needs_restart(True, k, 16384, server_key(kept, "auto"), 4096)                                         # unload_model toggled
 print("ok")

@@ -131,9 +131,10 @@ The GGUFs include the MTP head, so MTP works here too. The model card lists how 
 
 - **quant:** Q8_0 for 16 GB GPUs and up. Q4_K_M for 8–12 GB; it is also faster, with a small quality cost.
 - **kv_cache:** f16 by default. q8_0 saves some memory for Q4_K_M on 8 GB GPUs, at almost no quality cost.
+- **unload_model:** on by default: the PE's VRAM is freed after each prompt so the rest of the workflow gets the GPU. Turn it off only if your GPU has room for both the PE (about 10 GB for Q8_0, 6 GB for Q4_K_M) and your other models, typically 24–32 GB or more. Each prompt then skips reloading the PE, about 6 s faster for text-to-image on an RTX 4090 Laptop. On a GPU that's too small the rest of the workflow slows down instead, since ComfyUI can't free llama-server's memory.
 - **max_length:** you can raise it to the official values (16256 for text-to-image, 24000 for editing) without slowing down; it only reserves a little more memory.
 
-llama-server runs as a separate process. The node unloads ComfyUI's models before each prompt, and llama-server frees its VRAM about a second after answering, so the rest of the workflow gets the GPU back. It stops when ComfyUI exits. After ComfyUI starts, or when you change the model, quant, kv_cache or mtp setting, the first prompt takes a few seconds longer while llama-server starts.
+llama-server runs as a separate process. With unload_model on, the node unloads ComfyUI's models before each prompt, and llama-server frees its VRAM about a second after answering, so the rest of the workflow gets the GPU back. With it off, both stay loaded, and ComfyUI's models are unloaded only when llama-server has to start. It stops when ComfyUI exits. After ComfyUI starts, or when you change the model, quant, kv_cache, unload_model or mtp setting, the first prompt takes a few seconds longer while llama-server starts.
 
 The `none` preset isn't supported with the llama.cpp backend.
 
@@ -161,6 +162,7 @@ Loads the prompt enhancer, ready for fast MTP generation.
 | backend | llama.cpp (recommended on NVIDIA) runs the PE in a separate llama-server process, much faster. ComfyUI (default, for backward compatibility with versions before 1.2.0) runs it inside ComfyUI on any GPU. See [Backends](#backends). |
 | quant | llama.cpp only: Q8_0 (9.8 GB, for 16 GB GPUs and up) or Q4_K_M (6.0 GB, for 8–12 GB GPUs) |
 | kv_cache | llama.cpp only: f16 (default) or q8_0, which stores the KV cache at 8 bits to save memory |
+| unload_model | llama.cpp only: on (default) frees the PE's VRAM after each prompt; off keeps it and ComfyUI's models loaded, for GPUs with room for both |
 
 Where each backend gets its model is described under [Backends](#backends).
 
@@ -301,7 +303,7 @@ This extension depends on parts of ComfyUI that can change between versions. Ple
   - Speed, in tok/s against the ComfyUI backend without MTP: with MTP and Q8_0, about 2.0× (text-to-image) to 3.5× (editing) at the official max_length, and 1.5× to 2.4× at the node's 8192 default; Q4_K_M reaches 2.7× to 4.4× at the official max_length. Its speed doesn't depend on max_length. See [Performance](#performance).
   - GGUFs with the MTP head for all four models (t2i, i2i and both heretic versions) at [mozophe/Qwen-Image-2.1-PE-MTP-GGUF](https://huggingface.co/mozophe/Qwen-Image-2.1-PE-MTP-GGUF): Q8_0 for 16 GB GPUs, Q4_K_M for 8–12 GB, and one shared vision file for editing. GGUFs already under models/LLM are used where they are.
   - llama-server downloads on first use: a pinned llama.cpp release, CUDA 12 or 13 build chosen from the driver, checked against its SHA-256.
-  - llama-server frees its VRAM after each prompt and stops with ComfyUI.
+  - llama-server frees its VRAM after each prompt and stops with ComfyUI. On GPUs with room for both, turn off **unload_model** to keep it and ComfyUI's models loaded between prompts.
 - **1.1.2** (2026-09-24): max_length defaults to 8192 instead of 16256/24000, which is faster, and answers fit well within it.
 - **1.1.1** (2026-09-24): the PE seed defaults to a fixed 42; refreshed sample workflows.
 - **1.1.0** (2026-09-24): heretic t2i and i2i models.

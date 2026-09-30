@@ -212,17 +212,18 @@ def ensure_gguf(model, quant, fetch=None, folder=None, roots=None):
 
 class LlamaPE:
     # what the loader hands the generator through the CLIP socket for the llama.cpp backend
-    __slots__ = ("pe_task", "model", "mmproj", "quant", "kv_cache", "exe")
+    __slots__ = ("pe_task", "model", "mmproj", "quant", "kv_cache", "exe", "unload")
 
-    def __init__(self, pe_task, model, mmproj, quant, kv_cache, exe):
+    def __init__(self, pe_task, model, mmproj, quant, kv_cache, exe, unload=True):
         self.pe_task, self.model, self.mmproj, self.quant, self.kv_cache, self.exe = pe_task, model, mmproj, quant, kv_cache, exe
+        self.unload = unload  # free VRAM after each prompt; off keeps llama-server and ComfyUI's models loaded
 
     def __getattr__(self, name):  # only reached for attributes a real CLIP has and this handle doesn't
         raise AttributeError(HANDLE_ERROR)
 
 
-def load_llama(model, quant, kv_cache):
+def load_llama(model, quant, kv_cache, unload=True):
     build = select_build(platform.system(), platform.machine(), driver_version())
     exe = ensure_server(folder_paths.models_dir, build)
     gguf, mmproj = ensure_gguf(model, quant)
-    return LlamaPE(PE[model].get("task", model), gguf, mmproj, quant, kv_cache, str(exe))
+    return LlamaPE(PE[model].get("task", model), gguf, mmproj, quant, kv_cache, str(exe), unload)

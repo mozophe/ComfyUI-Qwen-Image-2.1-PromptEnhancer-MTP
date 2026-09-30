@@ -1,5 +1,6 @@
-# llama.cpp backend runtime: one llama-server process that sleeps between generations (its VRAM freed, the process kept),
-# restarted when the model, vision file, KV cache type, MTP setting or needed context changes
+# llama.cpp backend runtime: one llama-server process that sleeps between generations (its VRAM freed, the process kept)
+# unless unload_model is off, restarted when the model, vision file, KV cache type, MTP setting, unload_model or needed
+# context changes
 import atexit
 import base64
 import contextlib
@@ -57,13 +58,13 @@ def mtp_args(mtp):
 
 
 def server_key(handle, mtp):
-    return (handle.exe, handle.model, handle.mmproj, handle.kv_cache, mtp)
+    return (handle.exe, handle.model, handle.mmproj, handle.kv_cache, mtp, handle.unload)
 
 
 def server_command(handle, ctx, mtp, load_mode, port):
     cmd = [handle.exe, "-m", handle.model, "-ngl", "99", "-fa", "on", "--fit", "off", "-np", "1", "-c", str(ctx),
-           "-ctk", handle.kv_cache, "-ctv", handle.kv_cache, "--sleep-idle-seconds", "1", "--load-mode", load_mode,
-           "--host", "127.0.0.1", "--port", str(port), "--no-webui"]
+           "-ctk", handle.kv_cache, "-ctv", handle.kv_cache] + (["--sleep-idle-seconds", "1"] if handle.unload else []) + [
+           "--load-mode", load_mode, "--host", "127.0.0.1", "--port", str(port), "--no-webui"]
     if handle.mmproj:
         cmd += ["--mmproj", handle.mmproj]
     return cmd + mtp_args(mtp)
@@ -180,10 +181,12 @@ class LlamaServer:
     def fail(self, what):
         return RuntimeError(failure_message(what, self.log_tail(), self.log_path))
 
-    def ensure(self, handle, ctx, mtp):
+    def ensure(self, handle, ctx, mtp, before_start=None):
         key = server_key(handle, mtp)
         if needs_restart(self.alive(), self.key, self.ctx, key, ctx):
             self.stop()
+            if before_start:
+                before_start()
             self.start(handle, ctx, mtp, key)
 
     def start(self, handle, ctx, mtp, key):
@@ -278,10 +281,16 @@ def generate(handle, text, images, preset, seed, mtp):
     mm = comfy.model_management
     fitted = [fit_image(im) for im in images]
     img_tokens = sum(image_tokens(im.shape[1], im.shape[2]) for im in fitted)
-    mm.unload_all_models()  # llama-server's VRAM is outside ComfyUI's memory manager
-    mm.soft_empty_cache()
+    def free_comfy():  # llama-server's VRAM is outside ComfyUI's memory manager
+        mm.unload_all_models()
+        mm.soft_empty_cache()
+
+    # unload_model off keeps ComfyUI's models loaded too, freeing them only for a llama-server (re)start
+    if handle.unload:
+        free_comfy()
     # +64: margin for any tokenizer difference from llama.cpp (none seen: equal or one over on the PE prompts)
-    SERVER.ensure(handle, context_size(count_tokens(text) + img_tokens + 64, preset["max_length"]), mtp)
+    SERVER.ensure(handle, context_size(count_tokens(text) + img_tokens + 64, preset["max_length"]), mtp,
+                  before_start=None if handle.unload else free_comfy)
     body = completion_body(insert_markers(text, SERVER.marker, len(fitted)), preset, seed, [png_b64(im) for im in fitted])
     pbar = comfy.utils.ProgressBar(preset["max_length"])
     done = [0]
@@ -291,8 +300,10 @@ def generate(handle, text, images, preset, seed, mtp):
         pbar.update_absolute(min(done[0], preset["max_length"]))
 
     # b11160 loses a request that arrives while the server is falling asleep (its queue only wakes for a request that finds
-    # it already asleep), so send only to a sleeping server: free after a generation, one extra load after a start
-    SERVER.wait_asleep()
+    # it already asleep), so send only to a sleeping server: free after a generation, one extra load after a start.
+    # With unload_model off the server never sleeps, so there is nothing to wait for.
+    if handle.unload:
+        SERVER.wait_asleep()
     try:
         with SERVER.stream(body) as lines:
             result = read_stream(lines, on_tokens, mm.processing_interrupted)
@@ -300,7 +311,8 @@ def generate(handle, text, images, preset, seed, mtp):
         if not str(e).startswith("llama.cpp backend:"):  # a server error chunk from read_stream
             raise SERVER.fail(str(e)) from e
         raise
-    SERVER.wait_asleep()
+    if handle.unload:
+        SERVER.wait_asleep()
     if result is None:  # closing the stream above made the server cancel the task
         raise mm.InterruptProcessingException()
     return result[0]
