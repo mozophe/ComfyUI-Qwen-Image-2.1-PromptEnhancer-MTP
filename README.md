@@ -193,7 +193,7 @@ The presets use the official values from Qwen's [prompt_rewrite](https://github.
 
 ## Performance
 
-Measured on 2026-09-30 on an RTX 4090 Laptop GPU (16 GB), through the nodes in ComfyUI, 6 prompts per configuration. Editing used two input images. All runs used the official PE settings: the t2i or i2i preset (Qwen's system prompts and sampling values, thinking on) with the official max_length, 16256 for text-to-image and 24000 for editing, instead of the node's 8192 default.
+Measured on 2026-09-30 on an RTX 4090 Laptop GPU (16 GB), through the nodes in ComfyUI, 6 prompts per configuration. Editing used two input images. All runs used the **official Qwen-Image 2.1 Prompt Enhancer settings**: the t2i or i2i preset (Qwen's system prompts and sampling values, thinking on) with the official max_length, 16256 for text-to-image and 24000 for editing.
 
 Speed is compared in tokens generated per second (tok/s), not total time: the PE writes answers of different lengths from run to run, so time alone would mix length with speed. Tok/s is the answer's tokens divided by the time the PE took, including everything the backend does, such as llama.cpp waking up and freeing VRAM. Each step adds one change to the one before, starting from the ComfyUI backend without MTP.
 
@@ -232,6 +232,7 @@ The same runs at max_length 8192. The ComfyUI backend is faster here than at the
 | ComfyUI, MTP off (baseline) | 30.8 | – | 1.00× |
 | + MTP | 41.1 | 1.33× | 1.33× |
 | + llama.cpp (Q8_0) | **47.0** | 1.14× | **1.53×** |
+| + Q4_K_M instead of Q8_0 (8–12 GB GPUs, small quality cost) | 62.6 | 1.33× | 2.03× |
 
 **Editing (two input images)**
 
@@ -240,8 +241,9 @@ The same runs at max_length 8192. The ComfyUI backend is faster here than at the
 | ComfyUI, MTP off (baseline) | 27.9 | – | 1.00× |
 | + MTP | 45.8 | 1.64× | 1.64× |
 | + llama.cpp (Q8_0) | **67.7** | 1.48× | **2.43×** |
+| + Q4_K_M instead of Q8_0 (8–12 GB GPUs, small quality cost) | 85.4 | 1.26× | 3.06× |
 
-All 48 answers at 8192 parsed, and none reached the limit. The longest was 5,437 tokens (editing), so 8192 fit every answer, though editing answers can come within a few thousand tokens of it.
+All 60 answers at 8192 parsed, and none reached the limit. The longest was 5,437 tokens (editing), so 8192 fit every answer, though editing answers can come within a few thousand tokens of it.
 
 ## Troubleshooting
 
