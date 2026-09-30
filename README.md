@@ -137,7 +137,7 @@ The GGUFs include the MTP head, so MTP works here too. The model card lists how 
 **Choosing settings:**
 
 - **quant:** Q8_0 on 16 GB GPUs and up. Q4_K_M below 16 GB, down to 8 GB; it is also faster, with a small quality cost, so it is worth trying on bigger GPUs too.
-- **kv_cache:** f16 by default. q8_0 saves about 0.3–0.6 GB (more with longer prompts, such as several input images) at almost no quality cost. Use it on 8 GB GPUs when editing with more than two images.
+- **kv_cache:** f16 by default. q8_0 saves about 0.3–0.6 GB (more with longer prompts, such as several input images) at almost no quality cost. Use it when the PE runs short of VRAM, on any GPU and quant, such as when editing with several images.
 - **vision_on_cpu:** off by default. On, editing keeps the vision part in system RAM, saving about 1.2 GB of VRAM, but reading the images takes much longer: about 13 s per image on an RTX 4090 Laptop's CPU. Use it when editing runs out of VRAM, on any GPU and quant, after the other steps in [Troubleshooting](#troubleshooting).
 - **unload_model:** on by default: the PE's VRAM is freed after each prompt so the rest of the workflow gets the GPU. Turn it off only if your GPU has room for both the PE (about 10 GB for Q8_0, 6 GB for Q4_K_M) and your other models, typically 24–32 GB or more. Each prompt then skips reloading the PE, about 6 s faster for text-to-image on an RTX 4090 Laptop. On a GPU that's too small the rest of the workflow slows down instead, since ComfyUI can't free llama-server's memory.
 - **max_length:** you can raise it to the official values (16256 for text-to-image, 24000 for editing) without slowing down; it only reserves a little more memory.

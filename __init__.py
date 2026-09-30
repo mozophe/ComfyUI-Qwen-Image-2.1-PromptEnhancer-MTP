@@ -133,7 +133,7 @@ class LoadQwenImage21PE(io.ComfyNode):
                         io.DynamicCombo.Option("llama.cpp", [
                             io.Combo.Input("quant", options=list(QUANTS), tooltip="Q8_0: 9.8 GB, for 16 GB GPUs and up. Q4_K_M: 6.0 GB, for 8 GB GPUs and up."),
                             io.Combo.Input("kv_cache", options=list(KV_CACHE), tooltip="q8_0 stores the KV cache at 8 bits, saving about 0.3-0.6 GB; "
-                                                                                        "use it on 8 GB GPUs when editing with more than two images."),
+                                                                                        "use it when the PE runs short of VRAM, on any GPU, such as when editing with several images."),
                             io.Boolean.Input("vision_on_cpu", default=False, tooltip="i2i only: keeps the vision part in system RAM, "
                                              "saving about 1.2 GB of VRAM, but reading images takes much longer (about 13 s per image). "
                                              "Use it when editing runs out of VRAM, on any GPU."),
