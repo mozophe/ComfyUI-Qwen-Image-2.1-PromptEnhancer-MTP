@@ -18,6 +18,10 @@ idx = {"metadata": {"total_size": 1}, "weight_map": {"model.a": "model-00001.saf
 out = bg.add_mtp_to_index(idx, ["mtp.fc.weight", "mtp.norm.weight"])
 assert out["weight_map"] == {"model.a": "model-00001.safetensors", "mtp.fc.weight": "model-mtp.safetensors", "mtp.norm.weight": "model-mtp.safetensors"}
 assert "mtp.fc.weight" not in idx["weight_map"]
+# Q8_0 is plain; Q4_K_M uses the importance matrix and keeps the linear-attention gates and outputs at higher precision
+assert bg.quantize_args("Q8_0", "m.imatrix") == []
+assert bg.quantize_args("Q4_K_M", "m.imatrix") == ["--imatrix", "m.imatrix", "--tensor-type", "ssm_alpha=q8_0", "--tensor-type", "ssm_beta=q8_0",
+                                                   "--tensor-type", "attn_gate=q6_K", "--tensor-type", "ssm_out=q6_K"]
 # llama-perplexity's summary line, also when Windows decodes its "±" as cp1252 ("Â±")
 assert bg.parse_kld("x\nMean    KLD:   0.005402 ±   0.001396\ny") == 0.005402
 assert bg.parse_kld("Mean    KLD:   0.005402 Â±   0.001396") == 0.005402

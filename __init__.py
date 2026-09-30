@@ -123,7 +123,7 @@ class LoadQwenImage21PE(io.ComfyNode):
             category="loaders",
             description="Loads the Qwen-Image 2.1 prompt enhancer with an MTP head. ComfyUI backend: the first run downloads it (9.5 GB; heretic streams "
                         "19 GB of bf16 weights) and saves a prepared 10 GB copy. llama.cpp backend (NVIDIA, Windows/Linux): downloads llama-server "
-                        "(~0.6 GB, once) and a GGUF (Q8_0 9.8 GB or Q4_K_M 5.5 GB, plus 0.9 GB for i2i); faster generation.",
+                        "(~0.6 GB, once) and a GGUF (Q8_0 9.8 GB or Q4_K_M 6.0 GB, plus 0.9 GB for i2i); faster generation.",
             inputs=[io.Combo.Input("model", options=list(PE), tooltip="t2i: text-to-image prompt enhancer. i2i: image-edit prompt enhancer (use with an image). "
                                                                        "heretic: community abliterated versions that refuse less."),
                     # optional so saved workflows and API prompts from before this input keep the ComfyUI path
@@ -131,7 +131,7 @@ class LoadQwenImage21PE(io.ComfyNode):
                                           "process, faster; NVIDIA GPU on Windows or Linux only.", options=[
                         io.DynamicCombo.Option("ComfyUI", []),
                         io.DynamicCombo.Option("llama.cpp", [
-                            io.Combo.Input("quant", options=list(QUANTS), tooltip="Q8_0: 9.8 GB, for 16 GB GPUs and up. Q4_K_M: 5.5 GB, for 8-12 GB GPUs."),
+                            io.Combo.Input("quant", options=list(QUANTS), tooltip="Q8_0: 9.8 GB, for 16 GB GPUs and up. Q4_K_M: 6.0 GB, for 8-12 GB GPUs."),
                             io.Combo.Input("kv_cache", options=list(KV_CACHE), tooltip="q8_0 stores the KV cache at 8 bits, saving about 240 MiB; "
                                                                                         "use it with Q4_K_M on 8 GB GPUs."),
                         ]),

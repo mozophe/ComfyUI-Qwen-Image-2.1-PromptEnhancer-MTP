@@ -1,8 +1,10 @@
 # Maintainer tool: build the llama.cpp backend's GGUFs for one PE model and optionally upload them.
-# bf16 source -> MTP head grafted -> bf16 GGUF -> Q8_0 + Q4_K_M (+ bf16 vision file for i2i) -> KL divergence + smoke -> upload
-# usage: python tools/build_gguf.py <model> <llama.cpp dir> <work dir> <eval text> [--upload]
-#   <llama.cpp dir>: llama.cpp source at tag b11160 with its binaries in bin/ (llama-quantize, llama-perplexity, llama-server)
-#   run with a Python that has transformers >= 5 and torch (e.g. ComfyUI's venv), PYTHONPATH is set to <llama.cpp dir>/gguf-py
+# bf16 source -> MTP head grafted -> bf16 GGUF -> importance matrix -> Q8_0 + Q4_K_M (+ bf16 vision file for i2i) -> KL divergence
+# -> upload
+# usage: python tools/build_gguf.py <model> <llama.cpp dir> <work dir> <eval text> <calibration text> [--upload]
+#   <llama.cpp dir>: llama.cpp source at tag b11160 with its binaries in bin/ (llama-quantize, llama-imatrix, llama-perplexity)
+#   <calibration text>: PE answers for llama-imatrix, not overlapping the eval text
+#   run with a Python that has transformers >= 5 and torch, PYTHONPATH is set to <llama.cpp dir>/gguf-py
 import copy, json, os, re, subprocess, sys
 from pathlib import Path
 
@@ -10,6 +12,14 @@ SOURCES = {"t2i": "Qwen/Qwen-Image-2.1-PE-T2I", "i2i": "Qwen/Qwen-Image-2.1-PE-I
            "t2i - heretic": "pottokao/Qwen-Image-2.1-PE-T2I-Heretic", "i2i - heretic": "darrellbest/Qwen-Image-2.1-PE-I2I-Heretic"}
 GGUF_REPO = "mozophe/Qwen-Image-2.1-PE-MTP-GGUF"
 KLD_BAR = {"Q8_0": 0.01, "Q4_K_M": 0.05}
+
+
+def quantize_args(quant, imatrix):
+    # plain Q4_K_M drifts too far on Qwen3.5 (t2i mean KLD 0.146); the importance matrix halves it and 6-bit linear-attention
+    # gates/outputs bring it to 0.040 for 0.2 GB
+    if quant == "Q8_0":
+        return []
+    return ["--imatrix", imatrix] + [a for t in ("ssm_alpha=q8_0", "ssm_beta=q8_0", "attn_gate=q6_K", "ssm_out=q6_K") for a in ("--tensor-type", t)]
 
 
 def patch_config(cfg):
@@ -41,7 +51,7 @@ def kld(ll, gguf, base_logits, eval_text):
     return parse_kld(out.stdout + out.stderr)
 
 
-def main(model, ll, work, eval_text, upload):
+def main(model, ll, work, eval_text, calib_text, upload):
     from huggingface_hub import snapshot_download, HfApi
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from graft import write, mtp_tensors
@@ -62,10 +72,12 @@ def main(model, ll, work, eval_text, upload):
     out.mkdir(exist_ok=True)
     bf16 = work / f"{base}.mtp.bf16.gguf"
     run([sys.executable, ll / "convert_hf_to_gguf.py", src, "--outtype", "bf16", "--outfile", bf16], env=env)
+    imatrix = work / f"{base}.imatrix.gguf"
+    run([ll / "bin" / "llama-imatrix", "-m", bf16, "-f", calib_text, "-o", imatrix, "-c", "4096", "-fa", "on"])
     files = []
     for quant in ("Q8_0", "Q4_K_M"):
         files.append(out / f"{base}.mtp.{quant}.gguf")
-        run([ll / "bin" / "llama-quantize", bf16, files[-1], quant])
+        run([ll / "bin" / "llama-quantize", *quantize_args(quant, imatrix), bf16, files[-1], quant])
     if model == "i2i":  # the one vision file; the heretic i2i model reuses it
         files.append(out / f"{base}.mmproj.bf16.gguf")
         run([sys.executable, ll / "convert_hf_to_gguf.py", src, "--mmproj", "--outtype", "bf16", "--outfile", files[-1]], env=env)
@@ -79,7 +91,8 @@ def main(model, ll, work, eval_text, upload):
         print(f"{f.name}: mean KLD {report[quant]:.4f} (bar {KLD_BAR[quant]})")
         if report[quant] > KLD_BAR[quant]:
             sys.exit(f"{f.name} fails the KLD bar; not uploading")
-    json.dump({"model": model, "source": SOURCES[model], "llama.cpp": "b11160", "mean_kld": report},
+    json.dump({"model": model, "source": SOURCES[model], "llama.cpp": "b11160", "mean_kld": report,
+               "quantize_args": {q: [str(a) for a in quantize_args(q, Path(imatrix).name)] for q in report}},
               open(out / f"{base}.build.json", "w"), indent=2)
     if upload:
         HfApi().upload_large_folder(repo_id=GGUF_REPO, repo_type="model", folder_path=str(out),
@@ -88,4 +101,4 @@ def main(model, ll, work, eval_text, upload):
 
 if __name__ == "__main__":
     a = [x for x in sys.argv[1:] if x != "--upload"]
-    main(a[0], a[1], a[2], a[3], "--upload" in sys.argv)
+    main(a[0], a[1], a[2], a[3], a[4], "--upload" in sys.argv)
