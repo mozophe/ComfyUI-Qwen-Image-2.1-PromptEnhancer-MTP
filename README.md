@@ -127,6 +127,11 @@ Set the loader's **backend** to `llama.cpp`. The loader then runs the prompt enh
 
 **Why use it:** it generates the enhanced prompt much faster than the ComfyUI backend: with MTP on both, 47 vs 34 tok/s for text-to-image (1.4×) and 68 vs 33 tok/s for editing with two images (2.1×). Its speed doesn't drop with a higher max_length, so the official lengths cost nothing extra. Its Q8_0 model matches the quality of the int8 model the ComfyUI backend uses. See [Performance](#performance).
 
+**Why llama-server and not llama-cpp-python?** The node runs llama.cpp's own prebuilt `llama-server` as a separate process instead of installing the `llama-cpp-python` package into ComfyUI:
+
+- **Nothing is installed into ComfyUI's Python.** llama-cpp-python can change numpy and other packages that ComfyUI and other custom nodes depend on. Its CUDA builds also exist only for some Python, CUDA and OS combinations, and otherwise need a C++ compiler.
+- **One pinned, verified build.** The node downloads a specific llama.cpp release (b11160), chosen for your NVIDIA driver and checked against its SHA-256, so everyone runs the same tested version.
+
 **Downloads (first use):**
 
 - llama-server, a pinned prebuilt llama.cpp release (about 0.7 GB, once), into `ComfyUI/models/llama.cpp/`. The node picks the CUDA 13 or CUDA 12 build that matches your driver.
@@ -142,7 +147,7 @@ The GGUFs include the MTP head, so MTP works here too. The model card lists how 
 - **unload_model:** on by default: the PE's VRAM is freed after each prompt so the rest of the workflow gets the GPU. Turn it off only if your GPU has room for both the PE (about 10 GB for Q8_0, 6 GB for Q4_K_M) and your other models, typically 24–32 GB or more. Each prompt then skips reloading the PE, about 6 s faster for text-to-image on an RTX 4090 Laptop. On a GPU that's too small the rest of the workflow slows down instead, since ComfyUI can't free llama-server's memory.
 - **max_length:** you can raise it to the official values (16256 for text-to-image, 24000 for editing) without slowing down; it only reserves a little more memory.
 
-llama-server runs as a separate process. With unload_model on, the node unloads ComfyUI's models before each prompt, and llama-server frees its VRAM about a second after answering, so the rest of the workflow gets the GPU back. With it off, both stay loaded, and ComfyUI's models are unloaded only when llama-server has to start. It stops when ComfyUI exits. After ComfyUI starts, or when you change the model, quant, kv_cache, unload_model or mtp setting, the first prompt takes a few seconds longer while llama-server starts.
+llama-server runs as a separate process. With unload_model on, the node unloads ComfyUI's models before each prompt, and llama-server frees its VRAM about a second after answering, so the rest of the workflow gets the GPU back. With it off, both stay loaded, and ComfyUI's models are unloaded only when llama-server has to start. It stops when ComfyUI exits. After ComfyUI starts, or when you change the model, quant, kv_cache, vision_on_cpu, unload_model or mtp setting, the first prompt takes a few seconds longer while llama-server starts.
 
 The `none` preset isn't supported with the llama.cpp backend.
 
