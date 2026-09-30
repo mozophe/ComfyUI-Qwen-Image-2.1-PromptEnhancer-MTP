@@ -143,19 +143,26 @@ def gguf_names(model, quant):
     return f"{base}.mtp.{quant}.gguf", MMPROJ.get(model)
 
 
+def llm_roots():
+    # models/LLM: where LLM nodes keep their models (ComfyUI core doesn't register it); a registered "LLM" folder wins
+    if "LLM" in folder_paths.folder_names_and_paths:
+        return list(folder_paths.get_folder_paths("LLM"))
+    return [str(Path(folder_paths.models_dir) / "LLM")]
+
+
 def gguf_folder():
-    return Path(folder_paths.get_folder_paths("text_encoders")[0]) / "Qwen-Image-2.1-PE"
+    return Path(llm_roots()[0]) / "Qwen-Image-2.1-PE"
 
 
 def find_file(name, roots):
-    # like pe.find_text_encoder, which can't see .gguf: a file the user moved anywhere under text_encoders is used there
+    # a GGUF the user already has or moved anywhere under the LLM folders is used where it is
     return next((str(p) for r in roots if Path(r).is_dir() for p in Path(r).rglob(name) if p.is_file()), None)
 
 
 def ensure_gguf(model, quant, fetch=None, folder=None, roots=None):
     fetch = fetch or (lambda repo, name, local_dir: hf_hub_download(repo, name, local_dir=local_dir))
     folder = Path(folder) if folder is not None else gguf_folder()
-    roots = roots if roots is not None else folder_paths.get_folder_paths("text_encoders")
+    roots = roots if roots is not None else llm_roots()
     paths = []
     for name in gguf_names(model, quant):
         if name is None:
