@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import tarfile
 import tempfile
+import time
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -31,13 +32,24 @@ def parse_driver_version(text):
         return None
 
 
-def driver_version():
-    try:
-        out = subprocess.run(["nvidia-smi", "--query-gpu=driver_version", "--format=csv,noheader"],
-                             capture_output=True, text=True, timeout=30)
-    except (OSError, subprocess.TimeoutExpired):
-        return None
-    return parse_driver_version(out.stdout) if out.returncode == 0 else None
+def driver_version(run=subprocess.run, sleep=time.sleep, tries=3):
+    # None only when nvidia-smi doesn't exist (no NVIDIA driver). nvidia-smi can fail once under load (seen once in ~50
+    # loads), so it is retried, and a lasting failure reports nvidia-smi's own output rather than "no NVIDIA GPU"
+    for attempt in range(tries):
+        try:
+            out = run(["nvidia-smi", "--query-gpu=driver_version", "--format=csv,noheader"], capture_output=True, text=True, timeout=30)
+            detail = f"exit {out.returncode}: {(out.stderr or out.stdout).strip()[-300:]}"
+            version = parse_driver_version(out.stdout) if out.returncode == 0 else None
+        except FileNotFoundError:
+            return None
+        except (OSError, subprocess.TimeoutExpired) as e:
+            version, detail = None, str(e)
+        if version is not None:
+            return version
+        if attempt < tries - 1:
+            sleep(1)
+    raise RuntimeError(f"nvidia-smi could not read the NVIDIA driver version ({detail}). Check the GPU driver, or set the "
+                       "loader's backend to ComfyUI.")
 
 
 def select_build(system, machine, driver):

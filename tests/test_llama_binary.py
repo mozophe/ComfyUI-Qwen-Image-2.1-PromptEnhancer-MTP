@@ -37,4 +37,29 @@ msg = raises("Windows", "AMD64", (522, 6))
 assert "522.6" in msg and "528.33" in msg, msg
 msg = raises("Linux", "x86_64", (525, 60, 12))
 assert "525.60.12" in msg and "525.60.13" in msg, msg
+
+# driver_version: no nvidia-smi means no NVIDIA driver (the platform error); a failing nvidia-smi is retried, and if it keeps
+# failing its own output is reported instead of a wrong "no NVIDIA GPU"
+from types import SimpleNamespace
+from qpe.llama_setup import driver_version
+
+def runner(*results):
+    calls = iter(results)
+    def run(*a, **kw):
+        r = next(calls)
+        if isinstance(r, BaseException):
+            raise r
+        return SimpleNamespace(returncode=r[0], stdout=r[1], stderr=r[2])
+    return run
+
+assert driver_version(run=runner(FileNotFoundError("nvidia-smi"))) is None
+assert driver_version(run=runner((0, "580.88\n", ""))) == (580, 88)
+naps = []
+assert driver_version(run=runner((9, "", "Unable to determine the device handle"), (0, "", ""), (0, "580.88\n", "")), sleep=naps.append) == (580, 88)
+assert naps == [1, 1]
+try:
+    driver_version(run=runner(*[(9, "", "Unable to determine the device handle for GPU0: Unknown Error")] * 3), sleep=lambda s: None)
+    raise AssertionError("no error")
+except RuntimeError as e:
+    assert "Unknown Error" in str(e) and str(e) != PLATFORM_ERROR, e
 print("ok")
