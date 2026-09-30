@@ -27,6 +27,9 @@ assert b == {"prompt": "P", "n_predict": 8192, "seed": 42, "cache_prompt": False
              "temperature": 1.0, "top_k": 20, "top_p": 0.95, "min_p": 0.0, "repeat_penalty": 1.0, "presence_penalty": 1.5}, b
 b = completion_body("P", preset, 7, ["AAA", "BBB"])
 assert b["prompt"] == {"prompt_string": "P", "multimodal_data": ["AAA", "BBB"]} and b["seed"] == 7
+# llama.cpp seeds are uint32 and 0xFFFFFFFF means random: ComfyUI's 64-bit seeds map below it, deterministically
+assert completion_body("P", preset, 2**64 - 1, [])["seed"] == (2**64 - 1) % 0xFFFFFFFF
+assert completion_body("P", preset, 0xFFFFFFFF, [])["seed"] == 0
 
 def sse(*chunks):
     return [f"data: {json.dumps(c)}\n".encode() for c in chunks] + [b"\n"]
