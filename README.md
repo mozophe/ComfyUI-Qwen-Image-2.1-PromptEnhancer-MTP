@@ -39,7 +39,7 @@ Speeds are tokens per second at the official settings; see [Performance](#perfor
 - **Ready-to-use output.** The rewritten prompt comes out on its own, separate from the model's reasoning.
 - **Multi-image editing.** Up to 10 input images, any size.
 - **Heretic versions.** Community abliterated fine-tunes that refuse less, for both t2i and i2i.
-- **Runs on 8–12 GB NVIDIA GPUs.** With llama.cpp and quant Q4_K_M (plus kv_cache q8_0 on 8 GB), the enhancer runs with about 7.6 GB of VRAM free, without spilling into system memory. Before 1.2.0 it needed about 16 GB to run at full speed.
+- **Runs on NVIDIA GPUs with 8 GB or more.** With llama.cpp and quant Q4_K_M, the enhancer fits in about 7.6 GB of VRAM without slowing down, at the official max_length, for both text-to-image and editing.
 
 ## Requirements
 
@@ -53,7 +53,7 @@ Speeds are tokens per second at the official settings; see [Performance](#perfor
 | Disk per model | 6–10 GB, plus 0.7 GB once | About 10 GB |
 
 - **NVIDIA driver** for llama.cpp: 528.33 or newer on Windows, 525.60.13 or newer on Linux (x64).
-- **VRAM** with llama.cpp: quant Q8_0 for 16 GB or more; Q4_K_M for 12 GB or less, plus kv_cache q8_0 on 8 GB. With the ComfyUI backend, smaller GPUs work, but much more slowly.
+- **VRAM** with llama.cpp: quant Q8_0 for 16 GB or more; Q4_K_M for 12 GB or less. With the ComfyUI backend, smaller GPUs work, but much more slowly.
 - **Disk** with llama.cpp: the model is 9.8 GB (Q8_0) or 6.0 GB (Q4_K_M), and editing adds 0.9 GB for the vision part; llama-server is 0.7 GB, downloaded once.
 
 ## Installation
@@ -137,7 +137,7 @@ The GGUFs include the MTP head, so MTP works here too. The model card lists how 
 **Choosing settings:**
 
 - **quant:** Q8_0 for 16 GB GPUs and up. Q4_K_M for 8–12 GB; it is also faster, with a small quality cost.
-- **kv_cache:** f16 by default. q8_0 saves some memory for Q4_K_M on 8 GB GPUs, at almost no quality cost.
+- **kv_cache:** f16 by default. q8_0 saves some memory at almost no quality cost, for extra margin on 8 GB GPUs.
 - **unload_model:** on by default: the PE's VRAM is freed after each prompt so the rest of the workflow gets the GPU. Turn it off only if your GPU has room for both the PE (about 10 GB for Q8_0, 6 GB for Q4_K_M) and your other models, typically 24–32 GB or more. Each prompt then skips reloading the PE, about 6 s faster for text-to-image on an RTX 4090 Laptop. On a GPU that's too small the rest of the workflow slows down instead, since ComfyUI can't free llama-server's memory.
 - **max_length:** you can raise it to the official values (16256 for text-to-image, 24000 for editing) without slowing down; it only reserves a little more memory.
 
@@ -230,7 +230,7 @@ Speed is compared in tokens generated per second (tok/s), not total time: the PE
 - With llama.cpp, max_length 8192, 16256 and 24000 gave the same speed.
 - With MTP on, quality is unchanged, but the same seed gives different text than with MTP off.
 - Q8_0 (llama.cpp) and int8 convrot (ComfyUI) drift about equally little from the bf16 model; the [model card](https://huggingface.co/mozophe/Qwen-Image-2.1-PE-MTP-GGUF) has the measurements.
-- With Q4_K_M, llama.cpp ran with only about 7.6 GB of VRAM free, without spilling into system memory.
+- With Q4_K_M, llama.cpp ran at full speed when limited to about 7.6 GB of VRAM (a 16 GB GPU with the rest filled), for text-to-image and editing at the official max_length, with kv_cache f16 or q8_0.
 
 ### At the node's default max_length (8192)
 
@@ -311,7 +311,7 @@ This extension depends on parts of ComfyUI that can change between versions. Ple
   - New **backend** option on the loader: `llama.cpp` runs the PE in a separate llama-server process on NVIDIA GPUs (Windows/Linux x64). ComfyUI stays the default for backward compatibility, so workflows from earlier versions run unchanged.
   - Speed, in tok/s against the ComfyUI backend without MTP: with MTP and Q8_0, about 2.0× (text-to-image) to 3.5× (editing) at the official max_length, and 1.5× to 2.4× at the node's 8192 default; Q4_K_M reaches 2.7× to 4.4× at the official max_length. Its speed doesn't depend on max_length. See [Performance](#performance).
   - GGUFs with the MTP head for all four models (t2i, i2i and both heretic versions) at [mozophe/Qwen-Image-2.1-PE-MTP-GGUF](https://huggingface.co/mozophe/Qwen-Image-2.1-PE-MTP-GGUF): Q8_0 for 16 GB GPUs, Q4_K_M for 8–12 GB, and one shared vision file for editing. GGUFs already under models/LLM are used where they are.
-  - Smaller GPUs: with Q4_K_M (and kv_cache q8_0 on 8 GB), the enhancer runs on 8–12 GB NVIDIA GPUs without spilling into system memory. Before, it needed about 16 GB to run at full speed.
+  - Smaller GPUs: with Q4_K_M, the enhancer runs on NVIDIA GPUs with 8 GB or more without slowing down.
   - llama-server downloads on first use: a pinned llama.cpp release, CUDA 12 or 13 build chosen from the driver, checked against its SHA-256.
   - llama-server frees its VRAM after each prompt and stops with ComfyUI. On GPUs with room for both, turn off **unload_model** to keep it and ComfyUI's models loaded between prompts.
   - The console shows the same "Generating tokens" progress bar with the live speed (tokens per second) as the ComfyUI backend.
