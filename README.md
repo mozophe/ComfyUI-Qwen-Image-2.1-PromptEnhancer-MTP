@@ -225,11 +225,21 @@ Speed is compared in tokens generated per second (tok/s), not total time: the PE
 
 The same runs at max_length 8192. The ComfyUI backend is faster here than at the official lengths, which narrows llama.cpp's lead. Totals are relative to ComfyUI without MTP at 8192.
 
-| Step | Text-to-image | Editing |
-|---|---|---|
-| ComfyUI, MTP off (baseline) | 30.8 tok/s (1.00×) | 27.9 tok/s (1.00×) |
-| + MTP | 41.1 tok/s (1.33×) | 45.8 tok/s (1.64×) |
-| + llama.cpp (Q8_0) | **47.0 tok/s (1.53×)** | **67.7 tok/s (2.43×)** |
+**Text-to-image**
+
+| Step | Tok/s | Step gain | Total vs baseline |
+|---|---|---|---|
+| ComfyUI, MTP off (baseline) | 30.8 | – | 1.00× |
+| + MTP | 41.1 | 1.33× | 1.33× |
+| + llama.cpp (Q8_0) | **47.0** | 1.14× | **1.53×** |
+
+**Editing (two input images)**
+
+| Step | Tok/s | Step gain | Total vs baseline |
+|---|---|---|---|
+| ComfyUI, MTP off (baseline) | 27.9 | – | 1.00× |
+| + MTP | 45.8 | 1.64× | 1.64× |
+| + llama.cpp (Q8_0) | **67.7** | 1.48× | **2.43×** |
 
 All 48 answers at 8192 parsed, and none reached the limit. The longest was 5,437 tokens (editing), so 8192 fit every answer, though editing answers can come within a few thousand tokens of it.
 
