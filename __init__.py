@@ -7,6 +7,10 @@ from comfy_api.latest import ComfyExtension, io
 from comfy_extras.nodes_textgen import TextGenerate
 from .mtp import MTPClip, pe_prompt, split_thinking
 from .pe import PE, ensure_model, fit_image, parse_answer, system_prompt
+from .llama_setup import KV_CACHE, QUANTS, LlamaPE, load_llama
+from .llama_server import generate as llama_generate
+
+NONE_LLAMA_ERROR = "The none preset isn't supported with the llama.cpp backend; use a PE preset, or set the loader's backend to ComfyUI."
 
 # official prompt_rewrite/pe_core.py profiles: shared sampling, per-task presence penalty. The token cap is 8192
 # instead of the official 16256 (t2i) / 24000 (i2i): Qwen3.5 decode attends over the whole reserved cache, so a
@@ -66,7 +70,7 @@ class TextGenerateQwen35MTP(TextGenerate):
         # connected inputs in socket order, each batch split into single images
         images = [im[i:i + 1] for _, im in sorted((images or {}).items(), key=lambda kv: int(kv[0].rsplit("_", 1)[1])) if im is not None
                   for i in range(im.shape[0])]
-        text = cls.generate_text(MTPClip(clip), prompt, preset, seed, images, mtp)
+        text = cls.generate_text(clip if isinstance(clip, LlamaPE) else MTPClip(clip), prompt, preset, seed, images, mtp)
         thinking, answer = split_thinking(text)
         parsed = parse_answer(answer)
         if parsed is None:
@@ -80,6 +84,8 @@ class TextGenerateQwen35MTP(TextGenerate):
     def generate_text(cls, clip, prompt, preset, seed, images, mtp):
         name = preset["preset"]
         if name == "none":
+            if isinstance(clip, LlamaPE):
+                raise ValueError(NONE_LLAMA_ERROR)
             if len({im.shape[1:] for im in images}) > 1:
                 raise ValueError("The 'none' preset takes images of one size; use a PE preset for differently sized images.")
             return super().execute(clip, prompt, preset["max_length"], preset["sampling_mode"], image=torch.cat(images) if images else None,
@@ -97,7 +103,10 @@ class TextGenerateQwen35MTP(TextGenerate):
             raise ValueError(f"{name} needs at least one image.")
         if not preset["thinking"]:
             logging.warning(f"{name}: thinking is off; the PE models were trained with thinking on and degrade without it.")
-        text = pe_prompt(system_prompt(task), prompt, len(images), preset["thinking"])
+        if isinstance(clip, LlamaPE):
+            # the server inserts each image itself: the prompt gets no image blocks, generate() adds its media markers
+            return llama_generate(clip, pe_prompt(system_prompt(task), prompt, 0, preset["thinking"]), images, preset, seed, mtp)
+        text =pe_prompt(system_prompt(task), prompt, len(images), preset["thinking"])
         tokens = clip.tokenize(text, images=[fit_image(im) for im in images], min_length=1)
         ids = clip.generate(tokens, do_sample=True, max_length=preset["max_length"], temperature=preset["temperature"], top_k=preset["top_k"],
                             top_p=preset["top_p"], min_p=preset["min_p"], repetition_penalty=preset["repetition_penalty"], seed=seed,
@@ -112,15 +121,29 @@ class LoadQwenImage21PE(io.ComfyNode):
             node_id="LoadQwenImage21PEMTP",
             display_name="Qwen-Image 2.1 PE Loader (MTP)",
             category="loaders",
-            description="Loads the Qwen-Image 2.1 prompt enhancer with an MTP head. The first run downloads it (9.5 GB; heretic streams 19 GB of bf16 weights) and saves a prepared 10 GB copy; later runs load it directly.",
+            description="Loads the Qwen-Image 2.1 prompt enhancer with an MTP head. ComfyUI backend: the first run downloads it (9.5 GB; heretic streams "
+                        "19 GB of bf16 weights) and saves a prepared 10 GB copy. llama.cpp backend (NVIDIA, Windows/Linux): downloads llama-server "
+                        "(~0.6 GB, once) and a GGUF (Q8_0 9.8 GB or Q4_K_M 5.5 GB, plus 0.9 GB for i2i); faster generation.",
             inputs=[io.Combo.Input("model", options=list(PE), tooltip="t2i: text-to-image prompt enhancer. i2i: image-edit prompt enhancer (use with an image). "
-                                                                       "heretic: community abliterated versions that refuse less.")],
+                                                                       "heretic: community abliterated versions that refuse less."),
+                    # optional so saved workflows and API prompts from before this input keep the ComfyUI path
+                    io.DynamicCombo.Input("backend", optional=True, tooltip="ComfyUI: runs in ComfyUI (int8). llama.cpp: a separate llama-server "
+                                          "process, faster; NVIDIA GPU on Windows or Linux only.", options=[
+                        io.DynamicCombo.Option("ComfyUI", []),
+                        io.DynamicCombo.Option("llama.cpp", [
+                            io.Combo.Input("quant", options=list(QUANTS), tooltip="Q8_0: 9.8 GB, for 16 GB GPUs and up. Q4_K_M: 5.5 GB, for 8-12 GB GPUs."),
+                            io.Combo.Input("kv_cache", options=list(KV_CACHE), tooltip="q8_0 stores the KV cache at 8 bits, saving about 240 MiB; "
+                                                                                        "use it with Q4_K_M on 8 GB GPUs."),
+                        ]),
+                    ])],
             outputs=[io.Clip.Output()],
         )
 
     @classmethod
-    def execute(cls, model) -> io.NodeOutput:
-        clip = comfy.sd.load_clip(ckpt_paths=[ensure_model(model)], embedding_directory=folder_paths.get_folder_paths("embeddings"),
+    def execute(cls, model, backend=None) -> io.NodeOutput:
+        if backend is not None and backend.get("backend") == "llama.cpp":
+            return io.NodeOutput(load_llama(model, backend["quant"], backend["kv_cache"]))
+        clip =comfy.sd.load_clip(ckpt_paths=[ensure_model(model)], embedding_directory=folder_paths.get_folder_paths("embeddings"),
                                   clip_type=comfy.sd.CLIPType.QWEN_IMAGE)
         clip.pe_task = PE[model].get("task", model)  # lets the enhancer catch a loader/preset mismatch
         return io.NodeOutput(clip)
