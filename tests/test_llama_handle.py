@@ -25,6 +25,14 @@ with tempfile.TemporaryDirectory() as d:
     asked.clear()
     assert ensure_gguf("t2i", "Q4_K_M", fetch=fetch, folder=d)[1] is None and len(asked) == 1
 
+# a file the user moved elsewhere under text_encoders is used where it is, like the ComfyUI backend's models
+with tempfile.TemporaryDirectory() as d, tempfile.TemporaryDirectory() as other:
+    moved = Path(other) / "Qwen" / "PE" / "qwen3.5_9b_qwen_image_2.1_pe_t2i.mtp.Q8_0.gguf"
+    moved.parent.mkdir(parents=True); moved.write_bytes(b"gguf")
+    asked = []
+    assert ensure_gguf("t2i", "Q8_0", fetch=fetch, folder=Path(d) / "Qwen-Image-2.1-PE", roots=[d, other]) == (str(moved), None)
+    assert asked == []
+
 h = LlamaPE("i2i", "m.gguf", "v.gguf", "Q8_0", "q8_0", "llama-server.exe")
 assert (h.pe_task, h.model, h.mmproj, h.quant, h.kv_cache, h.exe) == ("i2i", "m.gguf", "v.gguf", "Q8_0", "q8_0", "llama-server.exe")
 assert getattr(h, "pe_task", None) == "i2i"

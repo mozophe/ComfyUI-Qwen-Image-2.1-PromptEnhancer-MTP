@@ -147,17 +147,25 @@ def gguf_folder():
     return Path(folder_paths.get_folder_paths("text_encoders")[0]) / "Qwen-Image-2.1-PE"
 
 
-def ensure_gguf(model, quant, fetch=None, folder=None):
+def find_file(name, roots):
+    # like pe.find_text_encoder, which can't see .gguf: a file the user moved anywhere under text_encoders is used there
+    return next((str(p) for r in roots if Path(r).is_dir() for p in Path(r).rglob(name) if p.is_file()), None)
+
+
+def ensure_gguf(model, quant, fetch=None, folder=None, roots=None):
     fetch = fetch or (lambda repo, name, local_dir: hf_hub_download(repo, name, local_dir=local_dir))
     folder = Path(folder) if folder is not None else gguf_folder()
-    folder.mkdir(parents=True, exist_ok=True)
+    roots = roots if roots is not None else folder_paths.get_folder_paths("text_encoders")
     paths = []
     for name in gguf_names(model, quant):
         if name is None:
             paths.append(None)
         elif (folder / name).is_file():
             paths.append(str(folder / name))
+        elif (found := find_file(name, roots)) is not None:
+            paths.append(found)
         else:
+            folder.mkdir(parents=True, exist_ok=True)
             logging.info(f"Qwen-Image 2.1 PE llama.cpp setup: downloading {GGUF_REPO}/{name} -> {folder}")
             try:
                 paths.append(str(fetch(GGUF_REPO, name, str(folder))))
