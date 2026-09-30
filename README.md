@@ -193,7 +193,7 @@ The presets use the official values from Qwen's [prompt_rewrite](https://github.
 
 ## Performance
 
-Measured on 2026-09-30 on an RTX 4090 Laptop GPU (16 GB), end to end through the nodes: each row is 6 prompts, each followed by the Qwen-Image 2.1 diffusion workflow (25 steps, 1024²). Editing used two input images. All runs used the official max_length (16256 for text-to-image, 24000 for editing).
+Measured on 2026-09-30 on an RTX 4090 Laptop GPU (16 GB), end to end through the nodes: each row is 6 prompts, each followed by the Qwen-Image 2.1 diffusion workflow (25 steps, 1024²). Editing used two input images. All runs used the official PE settings: the t2i or i2i preset (Qwen's system prompts and sampling values, thinking on) with the official max_length, 16256 for text-to-image and 24000 for editing, instead of the node's 8192 default.
 
 Speed is compared in tokens generated per second (tok/s), not total time: the PE writes answers of different lengths from run to run, so time alone would mix length with speed. Tok/s is the answer's tokens divided by the time the PE took, including everything the backend does, such as llama.cpp waking up and freeing VRAM. Speed-up is relative to the ComfyUI backend with MTP off.
 
