@@ -1,5 +1,6 @@
 # llama.cpp backend setup: pick and install the pinned llama-server build for this NVIDIA driver, download the hosted
 # GGUFs, and hand the loader a LlamaPE handle
+import hashlib
 import logging
 import os
 import platform
@@ -17,6 +18,17 @@ from .pe import PE
 
 LLAMA_TAG = "b11160"
 RELEASE_URL = f"https://github.com/ggml-org/llama.cpp/releases/download/{LLAMA_TAG}/"
+# SHA-256 of every asset select_build can pick, from the b11160 release's published digests: the archives hold executables
+ASSET_SHA256 = {
+    "llama-b11160-bin-win-cuda-13.4-x64.zip": "966b2b052a820d71ba1c2040a73c46afc772659a75395260a583746effb72cff",
+    "cudart-llama-bin-win-cuda-13.4-x64.zip": "738f8c251ac22b70c3ae6f83a10cf222725df0395246a2cf58f32bdb85fbe668",
+    "llama-b11160-bin-win-cuda-12.4-x64.zip": "e2bcd71b9a03e4ed7d8bdf77f129eb682d63bbff244ef24fbbe40f1003368763",
+    "cudart-llama-bin-win-cuda-12.4-x64.zip": "8c79a9b226de4b3cacfd1f83d24f962d0773be79f1e7b75c6af4ded7e32ae1d6",
+    "llama-b11160-bin-ubuntu-cuda-13.4-x64.tar.gz": "76983c34644683614a0d4983b7948b503dac76bfacc9f96a811c0ca146f103d4",
+    "cudart-llama-b11160-bin-ubuntu-cuda-13.4-x64.tar.gz": "14765bd08136c6838fbadf22f3484d2b9ad2be307ae0fa766ec42f4bb100b070",
+    "llama-b11160-bin-ubuntu-cuda-12.8-x64.tar.gz": "8ed8d659383b6624ef2bd14ebd6984c8c1b1b2f13e4ba0c5c43f6038ca22591d",
+    "cudart-llama-b11160-bin-ubuntu-cuda-12.8-x64.tar.gz": "54776c67e34b536f6123b1a0697931f86f846f9f71baa9d86f550485fbbc9df1",
+}
 CUDA13_MIN = (580,)
 CUDA12_MIN = {"Windows": (528, 33), "Linux": (525, 60, 13)}
 PLATFORM_ERROR = ("The llama.cpp backend needs an NVIDIA GPU on Windows or Linux (x64); "
@@ -137,6 +149,11 @@ def ensure_server(models_dir, build, fetch=download, check=check_server):
         for asset in build["assets"]:
             archives.append(Path(tmp) / asset)
             fetch(RELEASE_URL + asset, archives[-1])
+            with open(archives[-1], "rb") as f:
+                digest = hashlib.file_digest(f, "sha256").hexdigest()
+            if digest != ASSET_SHA256.get(asset):
+                raise RuntimeError(f"The llama.cpp download {asset} doesn't match its pinned SHA-256; nothing was installed. "
+                                   "Run the workflow again; if it keeps failing, report it.")
         return install_archives(archives, dest, build["exe"], check)
 
 

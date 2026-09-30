@@ -17,4 +17,25 @@ assert "did not answer" in other and "some log line" in other and "C:/tmp/llama-
 s = LlamaServer()
 assert s.proc is None and s.ctx == 0
 s.stop()
+
+# a server that timed out or dropped the connection is stopped, so the next run starts a fresh one instead of reusing it
+class FakeProc:
+    def __init__(self): self.stopped = False
+    def poll(self): return 1 if self.stopped else None
+    def terminate(self): self.stopped = True
+    def wait(self, timeout=None): return 1
+    returncode = 1
+for exc in (TimeoutError("timed out"), ConnectionResetError("reset by peer")):
+    s = LlamaServer()
+    proc = s.proc = FakeProc()
+    s.key, s.ctx = ("k",), 4096
+    def boom(*a, **kw): raise exc
+    s._request = boom
+    try:
+        with s.stream({}) as r:
+            pass
+        raise AssertionError("no error")
+    except RuntimeError as e:
+        assert str(e).startswith("llama.cpp backend:"), e
+    assert proc.stopped and s.proc is None and s.key is None, type(exc)
 print("ok")

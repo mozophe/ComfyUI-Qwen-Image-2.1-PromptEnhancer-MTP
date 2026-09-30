@@ -7,6 +7,8 @@ node = importlib.util.module_from_spec(spec)
 sys.modules["qpe"] = node
 spec.loader.exec_module(node)
 from qpe.llama_setup import install_archives, ensure_server
+import qpe.llama_setup
+PINNED = dict(getattr(qpe.llama_setup, "ASSET_SHA256", {}))  # the real pins, before the test swaps in its own
 
 def make_zip(path, files):
     with zipfile.ZipFile(path, "w") as z:
@@ -54,14 +56,35 @@ with tempfile.TemporaryDirectory() as d:
         assert "llama-server.exe" in str(e)
     assert not (d / "none" / "x").exists()
 
-    # ensure_server: downloads each asset once, then reuses the install
+    # ensure_server: downloads each asset once, checks it against its pinned SHA-256, then reuses the install
+    import hashlib, qpe.llama_setup as lset
     build = {"assets": ["a.zip", "b.zip"], "dir": "b11160-cuda-13.4", "exe": "llama-server.exe"}
     fetched = []
+    blobs = {}
+    for name, files in (("a.zip", {"llama-server.exe": b"exe"}), ("b.zip", {"x.dll": b"x"})):
+        make_zip(d / name, files); blobs[name] = (d / name).read_bytes()
+    lset.ASSET_SHA256 = {n: hashlib.sha256(b).hexdigest() for n, b in blobs.items()}
     def fetch(url, dst):
         fetched.append(url)
-        make_zip(dst, {"llama-server.exe": b"exe"} if url.endswith("a.zip") else {"x.dll": b"x"})
+        Path(dst).write_bytes(blobs[url.rsplit("/", 1)[1]])
     exe = ensure_server(d / "models", build, fetch=fetch, check=lambda p: None)
     assert exe == d / "models" / "llama.cpp" / "b11160-cuda-13.4" / "llama-server.exe"
     assert [u.rsplit("/", 1)[1] for u in fetched] == ["a.zip", "b.zip"] and fetched[0].startswith("https://github.com/ggml-org/llama.cpp/releases/download/b11160/")
     assert ensure_server(d / "models", build, fetch=fetch, check=lambda p: None) == exe and len(fetched) == 2
+
+    # a download that doesn't match its pinned hash, or an asset without one, is refused and nothing is installed
+    for hashes, needle in (({"a.zip": "0" * 64, "b.zip": lset.ASSET_SHA256["b.zip"]}, "a.zip"), ({"b.zip": lset.ASSET_SHA256["b.zip"]}, "a.zip")):
+        lset.ASSET_SHA256 = hashes
+        try:
+            ensure_server(d / "tampered", build, fetch=fetch, check=lambda p: None)
+            raise AssertionError("no error")
+        except RuntimeError as e:
+            assert needle in str(e) and "SHA-256" in str(e), e
+        assert not (d / "tampered" / "llama.cpp" / "b11160-cuda-13.4").exists()
+
+# the pinned hashes cover every asset select_build can pick
+from qpe.llama_setup import select_build
+for system, machine, drv in (("Windows", "AMD64", (581,)), ("Windows", "AMD64", (552,)), ("Linux", "x86_64", (581,)), ("Linux", "x86_64", (570,))):
+    for asset in select_build(system, machine, drv)["assets"]:
+        assert len(PINNED.get(asset, "")) == 64, asset
 print("ok")

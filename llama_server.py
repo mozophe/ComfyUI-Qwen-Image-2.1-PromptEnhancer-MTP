@@ -248,12 +248,15 @@ class LlamaServer:
                 yield r
         except urllib.error.HTTPError as e:
             raise self.fail(f"generation failed: {e.read().decode('utf-8', 'replace')[:500]}") from e
-        except TimeoutError as e:
-            raise self.fail("llama-server did not answer within 600 s") from e
-        except OSError as e:
-            if not self.alive():
-                raise self.fail(f"llama-server exited with code {self.proc.returncode} while generating") from e
-            raise self.fail(f"the connection to llama-server failed ({e})") from e
+        except OSError as e:  # TimeoutError included; a hung or broken server is stopped, so the next run starts a fresh one
+            if isinstance(e, TimeoutError):
+                err = self.fail("llama-server did not answer within 600 s")
+            elif not self.alive():
+                err = self.fail(f"llama-server exited with code {self.proc.returncode} while generating")
+            else:
+                err = self.fail(f"the connection to llama-server failed ({e})")
+            self.stop()
+            raise err from e
 
     def wait_asleep(self, timeout=60):
         # llama-server frees its VRAM 1 s after the last request; the next ComfyUI node needs that VRAM
