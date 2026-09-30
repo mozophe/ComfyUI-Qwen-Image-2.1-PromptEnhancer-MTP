@@ -219,7 +219,7 @@ Speed is compared in tokens generated per second (tok/s), not total time: the PE
 | ComfyUI, MTP off (baseline) | 23.5 | – | 1.00× |
 | + MTP | 33.9 | 1.44× | 1.44× |
 | + llama.cpp (Q8_0) | **46.8** | 1.38× | **1.99×** |
-| + Q4_K_M instead of Q8_0 (small quality cost; recommended below 16 GB) | 63.2 | 1.35× | 2.69× |
+| + Q4_K_M (small quality cost) | 63.2 | 1.35× | 2.69× |
 
 **Editing (two input images)**
 
@@ -228,7 +228,7 @@ Speed is compared in tokens generated per second (tok/s), not total time: the PE
 | ComfyUI, MTP off (baseline) | 19.4 | – | 1.00× |
 | + MTP | 32.6 | 1.68× | 1.68× |
 | + llama.cpp (Q8_0) | **67.8** | 2.08× | **3.49×** |
-| + Q4_K_M instead of Q8_0 (small quality cost; recommended below 16 GB) | 85.2 | 1.26× | 4.39× |
+| + Q4_K_M (small quality cost) | 85.2 | 1.26× | 4.39× |
 
 - llama.cpp without MTP ran at 42.3 tok/s for text-to-image (1.80× the baseline) and 46.6 tok/s for editing (2.40×).
 - With llama.cpp, max_length 8192, 16256 and 24000 gave the same speed.
@@ -248,7 +248,7 @@ The same runs at max_length 8192. The ComfyUI backend is faster here than at the
 | ComfyUI, MTP off (baseline) | 30.8 | – | 1.00× |
 | + MTP | 41.1 | 1.33× | 1.33× |
 | + llama.cpp (Q8_0) | **47.0** | 1.14× | **1.53×** |
-| + Q4_K_M instead of Q8_0 (small quality cost; recommended below 16 GB) | 62.6 | 1.33× | 2.03× |
+| + Q4_K_M (small quality cost) | 62.6 | 1.33× | 2.03× |
 
 **Editing (two input images)**
 
@@ -257,7 +257,7 @@ The same runs at max_length 8192. The ComfyUI backend is faster here than at the
 | ComfyUI, MTP off (baseline) | 27.9 | – | 1.00× |
 | + MTP | 45.8 | 1.64× | 1.64× |
 | + llama.cpp (Q8_0) | **67.7** | 1.48× | **2.43×** |
-| + Q4_K_M instead of Q8_0 (small quality cost; recommended below 16 GB) | 85.4 | 1.26× | 3.06× |
+| + Q4_K_M (small quality cost) | 85.4 | 1.26× | 3.06× |
 
 All 60 answers at 8192 parsed, and none reached the limit. The longest was 5,437 tokens (editing), so 8192 fit every answer, though editing answers can come within a few thousand tokens of it.
 
