@@ -306,6 +306,7 @@ This extension depends on parts of ComfyUI that can change between versions. Ple
   - GGUFs with the MTP head for all four models (t2i, i2i and both heretic versions) at [mozophe/Qwen-Image-2.1-PE-MTP-GGUF](https://huggingface.co/mozophe/Qwen-Image-2.1-PE-MTP-GGUF): Q8_0 for 16 GB GPUs, Q4_K_M for 8–12 GB, and one shared vision file for editing. GGUFs already under models/LLM are used where they are.
   - llama-server downloads on first use: a pinned llama.cpp release, CUDA 12 or 13 build chosen from the driver, checked against its SHA-256.
   - llama-server frees its VRAM after each prompt and stops with ComfyUI. On GPUs with room for both, turn off **unload_model** to keep it and ComfyUI's models loaded between prompts.
+  - The console shows the same "Generating tokens" progress bar with the live speed (tokens per second) as the ComfyUI backend.
 - **1.1.2** (2026-09-24): max_length defaults to 8192 instead of 16256/24000, which is faster, and answers fit well within it.
 - **1.1.1** (2026-09-24): the PE seed defaults to a fixed 42; refreshed sample workflows.
 - **1.1.0** (2026-09-24): heretic t2i and i2i models.
