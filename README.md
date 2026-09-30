@@ -193,7 +193,7 @@ The presets use the official values from Qwen's [prompt_rewrite](https://github.
 
 ## Performance
 
-Measured on 2026-09-30 on an RTX 4090 Laptop GPU (16 GB), end to end through the nodes: each configuration is 6 prompts, each followed by the Qwen-Image 2.1 diffusion workflow (25 steps, 1024²). Editing used two input images. All runs used the official PE settings: the t2i or i2i preset (Qwen's system prompts and sampling values, thinking on) with the official max_length, 16256 for text-to-image and 24000 for editing, instead of the node's 8192 default.
+Measured on 2026-09-30 on an RTX 4090 Laptop GPU (16 GB), through the nodes in ComfyUI, 6 prompts per configuration. Editing used two input images. All runs used the official PE settings: the t2i or i2i preset (Qwen's system prompts and sampling values, thinking on) with the official max_length, 16256 for text-to-image and 24000 for editing, instead of the node's 8192 default.
 
 Speed is compared in tokens generated per second (tok/s), not total time: the PE writes answers of different lengths from run to run, so time alone would mix length with speed. Tok/s is the answer's tokens divided by the time the PE took, including everything the backend does, such as llama.cpp waking up and freeing VRAM. Each step adds one change to the one before, starting from the ComfyUI backend without MTP.
 
@@ -214,7 +214,6 @@ Speed is compared in tokens generated per second (tok/s), not total time: the PE
 | + llama.cpp (Q8_0) | **67.8** | 2.08× | **3.49×** |
 
 - llama.cpp without MTP ran at 42.3 tok/s for text-to-image (1.80× the baseline) and 46.6 tok/s for editing (2.40×).
-- The rest of the workflow took the same time with either backend (about 18 s for text-to-image, 43 s for editing), so only the PE's speed differs.
 - With llama.cpp, max_length 8192, 16256 and 24000 gave the same speed. The ComfyUI backend is faster at its 8192 default than at the official lengths shown here.
 - With MTP on, quality is unchanged, but the same seed gives different text than with MTP off.
 - Q8_0 (llama.cpp) and int8 convrot (ComfyUI) drift about equally little from the bf16 model; the [model card](https://huggingface.co/mozophe/Qwen-Image-2.1-PE-MTP-GGUF) has the measurements.
