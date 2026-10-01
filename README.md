@@ -321,6 +321,7 @@ This extension depends on parts of ComfyUI that can change between versions. Ple
 
 ## Changelog
 
+- **1.2.1** (2026-10-01): updated README and registry description. No code changes.
 - **1.2.0** (2026-09-30): llama.cpp backend, recommended on NVIDIA GPUs.
   - New **backend** option on the loader: `llama.cpp` runs the PE in a separate llama-server process on NVIDIA GPUs (Windows/Linux x64). ComfyUI stays the default for backward compatibility, so workflows from earlier versions run unchanged.
   - Speed, in tok/s against the ComfyUI backend without MTP: with MTP and Q8_0, about 2.0× (text-to-image) to 3.5× (editing) at the official max_length, and 1.5× to 2.4× at the node's 8192 default; Q4_K_M reaches 2.7× to 4.4× at the official max_length. Its speed doesn't depend on max_length. See [Performance](#performance).
