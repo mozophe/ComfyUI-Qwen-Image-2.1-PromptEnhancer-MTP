@@ -321,6 +321,7 @@ This extension depends on parts of ComfyUI that can change between versions. Ple
 
 ## Changelog
 
+- **1.2.2** (2026-10-01): sample t2i and edit workflows for the ComfyUI backend, linked from the quick start. No code changes.
 - **1.2.1** (2026-10-01): updated README and registry description. No code changes.
 - **1.2.0** (2026-09-30): llama.cpp backend, recommended on NVIDIA GPUs.
   - New **backend** option on the loader: `llama.cpp` runs the PE in a separate llama-server process on NVIDIA GPUs (Windows/Linux x64). ComfyUI stays the default for backward compatibility, so workflows from earlier versions run unchanged.
