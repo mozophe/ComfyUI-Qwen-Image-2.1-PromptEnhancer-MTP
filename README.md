@@ -1,6 +1,6 @@
 <div align="center">
 
-# ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP
+# ComfyUI Qwen-Image 2.1 Prompt Enhancer (MTP)
 
 **ComfyUI nodes for Qwen-Image 2.1's official prompt enhancer, run with llama.cpp or inside ComfyUI, with MTP speculative decoding for faster generation.**
 
