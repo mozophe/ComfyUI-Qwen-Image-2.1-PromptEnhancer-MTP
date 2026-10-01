@@ -1,0 +1,870 @@
+{
+  "id": "56211b15-669b-4e3a-af93-8d7e4f822199",
+  "revision": 0,
+  "last_node_id": 16,
+  "last_link_id": 15,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoadQwenImage21PEMTP",
+      "pos": [
+        0,
+        -60
+      ],
+      "size": [
+        322.628515625,
+        82
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            1
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadQwenImage21PEMTP",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [
+        "t2i",
+        "ComfyUI"
+      ],
+      "widgets_values_named": {
+        "model": "t2i",
+        "backend": "llama.cpp",
+        "backend.quant": "Q8_0",
+        "backend.kv_cache": "f16",
+        "backend.vision_on_cpu": false,
+        "backend.unload_model": true
+      }
+    },
+    {
+      "id": 2,
+      "type": "TextGenerateQwen35MTP",
+      "pos": [
+        5.846670312011719,
+        185.08040031832894
+      ],
+      "size": [
+        400,
+        560
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 1
+        },
+        {
+          "name": "images.image_1",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive_prompt",
+          "type": "STRING",
+          "links": [
+            3,
+            10
+          ]
+        },
+        {
+          "name": "negative_prompt",
+          "type": "STRING",
+          "links": []
+        },
+        {
+          "name": "thinking",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "wh_ratio",
+          "type": "STRING",
+          "links": [
+            13
+          ]
+        },
+        {
+          "name": "ratio_follow",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "parse_ok",
+          "type": "BOOLEAN",
+          "links": [
+            15
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TextGenerateQwen35MTP",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [
+        "A cat wearing a tiny astronaut suit",
+        "Qwen-Image 2.1 PE (t2i)",
+        8192,
+        1,
+        20,
+        0.95,
+        0,
+        1,
+        1.5,
+        true,
+        42,
+        "fixed",
+        "auto"
+      ],
+      "widgets_values_named": {
+        "prompt": "A cat wearing a tiny astronaut suit",
+        "preset": "Qwen-Image 2.1 PE (t2i)",
+        "preset.max_length": 8192,
+        "preset.temperature": 1,
+        "preset.top_k": 20,
+        "preset.top_p": 0.95,
+        "preset.min_p": 0,
+        "preset.repetition_penalty": 1,
+        "preset.presence_penalty": 1.5,
+        "preset.thinking": true,
+        "seed": 42,
+        "fixed": "fixed",
+        "mtp": "auto"
+      }
+    },
+    {
+      "id": 3,
+      "type": "UNETLoader",
+      "pos": [
+        472.77127344110113,
+        505.6516874429931
+      ],
+      "size": [
+        270,
+        82
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            11
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "UNETLoader",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [
+        "Qwen\\Qwen Image 2.1\\qwen_image_2.1_int8_convrot.safetensors",
+        "default"
+      ],
+      "widgets_values_named": {
+        "unet_name": "Qwen\\Qwen Image 2.1\\qwen_image_2.1_int8_convrot.safetensors",
+        "weight_dtype": "default"
+      }
+    },
+    {
+      "id": 4,
+      "type": "CLIPLoader",
+      "pos": [
+        472.77127344110113,
+        645.6516874429931
+      ],
+      "size": [
+        270,
+        106
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "CLIPLoader",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [
+        "Qwen\\qwen3vl_8b_int8_convrot.safetensors",
+        "qwen_image",
+        "default"
+      ],
+      "widgets_values_named": {
+        "clip_name": "Qwen\\qwen3vl_8b_int8_convrot.safetensors",
+        "type": "qwen_image",
+        "device": "default"
+      }
+    },
+    {
+      "id": 5,
+      "type": "VAELoader",
+      "pos": [
+        472.77127344110113,
+        815.6516874429931
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            8
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "VAELoader",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [
+        "Qwen\\qwen_image_2.1_vae_bf16.safetensors"
+      ],
+      "widgets_values_named": {
+        "vae_name": "Qwen\\qwen_image_2.1_vae_bf16.safetensors"
+      }
+    },
+    {
+      "id": 6,
+      "type": "TextEncodeQwenImage21",
+      "pos": [
+        892.7712734411008,
+        505.6516874429931
+      ],
+      "size": [
+        400,
+        300
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 2
+        },
+        {
+          "name": "images.image_1",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "vae",
+          "shape": 7,
+          "type": "VAE",
+          "link": null
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "prompt"
+          },
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": [
+            5
+          ]
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": [
+            6
+          ]
+        },
+        {
+          "name": "latent",
+          "type": "LATENT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "TextEncodeQwenImage21",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [
+        "",
+        "",
+        1024
+      ],
+      "widgets_values_named": {
+        "prompt": "",
+        "negative_prompt": "",
+        "resolution": 1024
+      }
+    },
+    {
+      "id": 7,
+      "type": "KSampler",
+      "pos": [
+        1332.7712734411016,
+        505.6516874429931
+      ],
+      "size": [
+        320,
+        480
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 11
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 5
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 6
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 12
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            7
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "KSampler",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [
+        397066489156023,
+        "randomize",
+        25,
+        1,
+        "euler",
+        "simple",
+        1
+      ],
+      "widgets_values_named": {
+        "seed": 397066489156023,
+        "control_after_generate": "randomize",
+        "steps": 25,
+        "cfg": 1,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 1
+      }
+    },
+    {
+      "id": 8,
+      "type": "VAEDecode",
+      "pos": [
+        1692.7712734411016,
+        505.6516874429931
+      ],
+      "size": [
+        140,
+        46
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 7
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 8
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            14
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "VAEDecode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": "PreviewAny",
+      "pos": [
+        474.84551683789624,
+        0.5077537072268399
+      ],
+      "size": [
+        375.64575082942883,
+        442.29073744418884
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 10
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "title": "Rewritten prompt",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "PreviewAny",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [],
+      "widgets_values_named": {}
+    },
+    {
+      "id": 11,
+      "type": "EmptyLatentImage",
+      "pos": [
+        892.7712734411008,
+        845.6516874429931
+      ],
+      "size": [
+        317.01168077256955,
+        122.86835394965271
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            12
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "EmptyLatentImage",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [
+        1024,
+        1024,
+        1
+      ],
+      "widgets_values_named": {
+        "width": 1024,
+        "height": 1024,
+        "batch_size": 1
+      }
+    },
+    {
+      "id": 12,
+      "type": "PreviewAny",
+      "pos": [
+        900,
+        0
+      ],
+      "size": [
+        380,
+        150
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 13
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "title": "wh_ratio",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "PreviewAny",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [],
+      "widgets_values_named": {}
+    },
+    {
+      "id": 13,
+      "type": "MarkdownNote",
+      "pos": [
+        -460,
+        -60
+      ],
+      "size": [
+        433.8195794915772,
+        769.319803314209
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "Note: How to use",
+      "properties": {
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "version": "7.8",
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "## Qwen-Image 2.1 text-to-image with the prompt enhancer\n\nWrite a short idea in **Qwen-Image 2.1 Prompt Enhancer (MTP)**. It rewrites it into the detailed prompt Qwen-Image 2.1 was trained on.\n\n**Prompt enhancer backend** (on **Qwen-Image 2.1 PE Loader (MTP)**)\n\n- **ComfyUI** (set here): runs natively in ComfyUI (int8), on any GPU ComfyUI supports.\n- **NVIDIA GPU on Windows or Linux?** The llama.cpp backend is faster; use the workflow without `_comfyui` in its name.\n- **max_length** 8192 fits every answer seen in testing. The official 16256 slows this backend down.\n\n**Downloaded automatically** by the loader on first use (the prompt enhancer): the enhancer from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1) (9.5 GB) and the MTP head from [Qwen/Qwen3.5-9B](https://huggingface.co/Qwen/Qwen3.5-9B) (0.5 GB), combined into one 10 GB file in `models/text_encoders/Qwen-Image-2.1-PE/`. The heretic models download 19 GB instead.\n\nOfficial Pixel sizes for each **wh_ratio**:\n\n| wh_ratio | 1 MP | 2K (native) |\n|---|---|---|\n| 1:1 | 1024×1024 | 2048×2048 |\n| 4:3 / 3:4 | 1184×896 | 2400×1792 |\n| 3:2 / 2:3 | 1248×832 | 2528×1696 |\n| 16:9 / 9:16 | 1376×768 | 2752×1536 |\n\nOther ratios: keep about the same pixel count, with both sides multiples of 32.\n\n**Download these yourself** (the image models, from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`"
+      ],
+      "widgets_values_named": {
+        "text": "## Qwen-Image 2.1 text-to-image with the prompt enhancer\n\nWrite a short idea in **Qwen-Image 2.1 Prompt Enhancer (MTP)**. It rewrites it into the detailed prompt Qwen-Image 2.1 was trained on.\n\n**Prompt enhancer backend** (on **Qwen-Image 2.1 PE Loader (MTP)**)\n\n- **llama.cpp** (set here, recommended): NVIDIA GPUs on Windows or Linux. With MTP it generates about 2.0× the tokens per second of the ComfyUI backend without MTP.\n- **quant**: Q8_0 for GPUs with 16 GB or more.\n- **12 GB or less**: set **quant** to Q4_K_M (faster, small quality cost). On 8 GB, also set **kv_cache** to q8_0; that ran with about 7.6 GB of VRAM free in testing. Still out of VRAM? Lower max_length.\n- **unload_model**: keep it on unless your GPU has room for both the enhancer and the image model (24–32 GB or more); off then skips reloading the enhancer, about 6 s per prompt.\n- **Not on an NVIDIA GPU** (AMD, Intel, Mac)? Set **backend** to **ComfyUI**.\n- **max_length** 8192 fits every answer seen in testing. With llama.cpp the official 16256 costs nothing extra; the ComfyUI backend slows down with it.\n\n**Downloaded automatically** by the loader on first use (the prompt enhancer):\n- **backend llama.cpp**: llama-server (0.7 GB, once) into `models/llama.cpp/`, and the model from [mozophe/Qwen-Image-2.1-PE-MTP-GGUF](https://huggingface.co/mozophe/Qwen-Image-2.1-PE-MTP-GGUF) into `models/LLM/Qwen-Image-2.1-PE/`: Q8_0 9.8 GB or Q4_K_M 6.0 GB.\n- **backend ComfyUI**: the enhancer from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1) (9.5 GB) and the MTP head from [Qwen/Qwen3.5-9B](https://huggingface.co/Qwen/Qwen3.5-9B) (0.5 GB), combined into one 10 GB file in `models/text_encoders/Qwen-Image-2.1-PE/`. The heretic models download 19 GB instead.\n\nOfficial Pixel sizes for each **wh_ratio**:\n\n| wh_ratio | 1 MP | 2K (native) |\n|---|---|---|\n| 1:1 | 1024×1024 | 2048×2048 |\n| 4:3 / 3:4 | 1184×896 | 2400×1792 |\n| 3:2 / 2:3 | 1248×832 | 2528×1696 |\n| 16:9 / 9:16 | 1376×768 | 2752×1536 |\n\nOther ratios: keep about the same pixel count, with both sides multiples of 32.\n\n**Download these yourself** (the image models, from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`"
+      },
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 15,
+      "type": "SaveImageAdvanced",
+      "pos": [
+        1874.4107503455843,
+        505.3635617741956
+      ],
+      "size": [
+        646.767503877722,
+        585.5607515794372
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 14
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": []
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "SaveImageAdvanced",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "version": "7.8",
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "Qwen_image_2.1",
+        "png",
+        "8-bit",
+        "sRGB"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "Qwen_image_2.1",
+        "format": "png",
+        "format.bit_depth": "8-bit",
+        "format.input_color_space": "sRGB"
+      }
+    },
+    {
+      "id": 16,
+      "type": "PreviewAny",
+      "pos": [
+        899.6847468731688,
+        189.96944247528072
+      ],
+      "size": [
+        380,
+        150
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 15
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "title": "parse_ok",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "PreviewAny",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [],
+      "widgets_values_named": {}
+    }
+  ],
+  "links": [
+    [
+      2,
+      4,
+      0,
+      6,
+      0,
+      "CLIP"
+    ],
+    [
+      3,
+      2,
+      0,
+      6,
+      3,
+      "STRING"
+    ],
+    [
+      5,
+      6,
+      0,
+      7,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      6,
+      6,
+      1,
+      7,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      7,
+      7,
+      0,
+      8,
+      0,
+      "LATENT"
+    ],
+    [
+      8,
+      5,
+      0,
+      8,
+      1,
+      "VAE"
+    ],
+    [
+      10,
+      2,
+      0,
+      10,
+      0,
+      "STRING"
+    ],
+    [
+      11,
+      3,
+      0,
+      7,
+      0,
+      "MODEL"
+    ],
+    [
+      12,
+      11,
+      0,
+      7,
+      3,
+      "LATENT"
+    ],
+    [
+      13,
+      2,
+      3,
+      12,
+      0,
+      "STRING"
+    ],
+    [
+      15,
+      2,
+      5,
+      16,
+      0,
+      "BOOLEAN"
+    ],
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "CLIP"
+    ],
+    [
+      14,
+      8,
+      0,
+      15,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ue_links": [],
+    "ds": {
+      "scale": 0.5131581182307069,
+      "offset": [
+        661.0880069572326,
+        463.9525335607801
+      ]
+    },
+    "links_added_by_ue": [],
+    "frontendVersion": "1.53.6",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}

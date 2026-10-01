@@ -89,18 +89,18 @@ To update, run git pull in the extension's folder.
 
 The easiest way to start is to drag one of these images into ComfyUI. Each image carries its workflow, so dropping it loads the whole graph. The same workflows are also in the [workflows](workflows) folder as JSON.
 
-**Text-to-image** ([JSON](workflows/qwen_image_2.1_t2i_prompt_enhancer.json))
+**Text-to-image** ([JSON](workflows/qwen_image_2.1_t2i_prompt_enhancer.json), [JSON for the ComfyUI backend](workflows/qwen_image_2.1_t2i_prompt_enhancer_comfyui.json))
 
 ![Text-to-image workflow](workflows/qwen_image_2.1_t2i_prompt_enhancer.png)
 
-**Editing with two input images** ([JSON](workflows/qwen_image_2.1_edit_prompt_enhancer.json))
+**Editing with two input images** ([JSON](workflows/qwen_image_2.1_edit_prompt_enhancer.json), [JSON for the ComfyUI backend](workflows/qwen_image_2.1_edit_prompt_enhancer_comfyui.json))
 
 ![Edit workflow](workflows/qwen_image_2.1_edit_prompt_enhancer.png)
 
 Both are ComfyUI's official Qwen-Image 2.1 templates with the enhancer added in front. They use the int8 models from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1).
 
 > [!TIP]
-> The sample workflows use the recommended llama.cpp backend with quant Q8_0. **Not on an NVIDIA GPU?** Set the loader's **backend** to `ComfyUI`. Below 16 GB, set **quant** to Q4_K_M. Each workflow's note lists what the loader downloads for each backend, and which image models to download yourself. If your image models are in subfolders, re-select them in Load Diffusion Model, Load CLIP and Load VAE.
+> The sample workflows use the recommended llama.cpp backend with quant Q8_0. **Not on an NVIDIA GPU?** Use the JSON for the ComfyUI backend, or set the loader's **backend** to `ComfyUI`. Below 16 GB, set **quant** to Q4_K_M. Each workflow's note lists what the loader downloads for each backend, and which image models to download yourself. If your image models are in subfolders, re-select them in Load Diffusion Model, Load CLIP and Load VAE.
 
 ### Adding it to your own workflow
 
