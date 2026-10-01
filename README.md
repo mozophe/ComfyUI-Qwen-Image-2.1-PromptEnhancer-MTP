@@ -2,7 +2,7 @@
 
 # ComfyUI Qwen-Image 2.1 Prompt Enhancer (MTP)
 
-**ComfyUI nodes for Qwen-Image 2.1's official prompt enhancer, run with llama.cpp or inside ComfyUI, with MTP speculative decoding for faster generation.**
+**ComfyUI nodes for Qwen-Image 2.1's official prompt enhancer, run with llama.cpp or natively in ComfyUI, with MTP speculative decoding for faster generation.**
 
 [![ComfyUI](https://img.shields.io/badge/ComfyUI-%E2%89%A5%200.37.0-blue)](https://github.com/Comfy-Org/ComfyUI)
 [![Speed-up](https://img.shields.io/badge/llama.cpp%20%2B%20MTP-2.0%E2%80%933.5%C3%97%20tok%2Fs-orange)](#performance)
