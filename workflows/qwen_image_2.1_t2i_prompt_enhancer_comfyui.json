@@ -1,8 +1,8 @@
 {
   "id": "56211b15-669b-4e3a-af93-8d7e4f822199",
   "revision": 0,
-  "last_node_id": 16,
-  "last_link_id": 15,
+  "last_node_id": 17,
+  "last_link_id": 16,
   "nodes": [
     {
       "id": 1,
@@ -74,6 +74,12 @@
           "shape": 7,
           "type": "IMAGE",
           "link": null
+        },
+        {
+          "name": "system_prompt",
+          "shape": 7,
+          "type": "STRING",
+          "link": 16
         }
       ],
       "outputs": [
@@ -640,10 +646,10 @@
         }
       },
       "widgets_values": [
-        "## Qwen-Image 2.1 text-to-image with the prompt enhancer\n\nWrite a short idea in **Qwen-Image 2.1 Prompt Enhancer (MTP)**. It rewrites it into the detailed prompt Qwen-Image 2.1 was trained on.\n\n**Prompt enhancer backend** (on **Qwen-Image 2.1 PE Loader (MTP)**)\n\n- **ComfyUI** (set here): runs natively in ComfyUI (int8), on any GPU ComfyUI supports.\n- **NVIDIA GPU on Windows or Linux?** The llama.cpp backend is faster; use the workflow without `_comfyui` in its name.\n- **max_length** 8192 fits every answer seen in testing. The official 16256 slows this backend down.\n\n**Downloaded automatically** by the loader on first use (the prompt enhancer): the enhancer from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1) (9.5 GB) and the MTP head from [Qwen/Qwen3.5-9B](https://huggingface.co/Qwen/Qwen3.5-9B) (0.5 GB), combined into one 10 GB file in `models/text_encoders/Qwen-Image-2.1-PE/`. The heretic models download 19 GB instead.\n\nOfficial Pixel sizes for each **wh_ratio**:\n\n| wh_ratio | 1 MP | 2K (native) |\n|---|---|---|\n| 1:1 | 1024×1024 | 2048×2048 |\n| 4:3 / 3:4 | 1184×896 | 2400×1792 |\n| 3:2 / 2:3 | 1248×832 | 2528×1696 |\n| 16:9 / 9:16 | 1376×768 | 2752×1536 |\n\nOther ratios: keep about the same pixel count, with both sides multiples of 32.\n\n**Download these yourself** (the image models, from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`"
+        "## Qwen-Image 2.1 text-to-image with the prompt enhancer\n\nWrite a short idea in **Qwen-Image 2.1 Prompt Enhancer (MTP)**. It rewrites it into the detailed prompt Qwen-Image 2.1 was trained on.\n\n**Prompt enhancer backend** (on **Qwen-Image 2.1 PE Loader (MTP)**)\n\n- **ComfyUI** (set here): runs natively in ComfyUI (int8), on any GPU ComfyUI supports.\n- **NVIDIA GPU on Windows or Linux?** The llama.cpp backend is faster; use the workflow without `_comfyui` in its name.\n- **max_length** 8192 fits every answer seen in testing. The official 16256 slows this backend down.\n\n**System prompt** (optional): type your own into the **System prompt** box to replace the official one. Leave it empty to keep the official prompt.\n\n**Downloaded automatically** by the loader on first use (the prompt enhancer): the enhancer from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1) (9.5 GB) and the MTP head from [Qwen/Qwen3.5-9B](https://huggingface.co/Qwen/Qwen3.5-9B) (0.5 GB), combined into one 10 GB file in `models/text_encoders/Qwen-Image-2.1-PE/`. The heretic models download 19 GB instead.\n\nOfficial Pixel sizes for each **wh_ratio**:\n\n| wh_ratio | 1 MP | 2K (native) |\n|---|---|---|\n| 1:1 | 1024×1024 | 2048×2048 |\n| 4:3 / 3:4 | 1184×896 | 2400×1792 |\n| 3:2 / 2:3 | 1248×832 | 2528×1696 |\n| 16:9 / 9:16 | 1376×768 | 2752×1536 |\n\nOther ratios: keep about the same pixel count, with both sides multiples of 32.\n\n**Download these yourself** (the image models, from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`"
       ],
       "widgets_values_named": {
-        "text": "## Qwen-Image 2.1 text-to-image with the prompt enhancer\n\nWrite a short idea in **Qwen-Image 2.1 Prompt Enhancer (MTP)**. It rewrites it into the detailed prompt Qwen-Image 2.1 was trained on.\n\n**Prompt enhancer backend** (on **Qwen-Image 2.1 PE Loader (MTP)**)\n\n- **llama.cpp** (set here, recommended): NVIDIA GPUs on Windows or Linux. With MTP it generates about 2.0× the tokens per second of the ComfyUI backend without MTP.\n- **quant**: Q8_0 for GPUs with 16 GB or more.\n- **12 GB or less**: set **quant** to Q4_K_M (faster, small quality cost). On 8 GB, also set **kv_cache** to q8_0; that ran with about 7.6 GB of VRAM free in testing. Still out of VRAM? Lower max_length.\n- **unload_model**: keep it on unless your GPU has room for both the enhancer and the image model (24–32 GB or more); off then skips reloading the enhancer, about 6 s per prompt.\n- **Not on an NVIDIA GPU** (AMD, Intel, Mac)? Set **backend** to **ComfyUI**.\n- **max_length** 8192 fits every answer seen in testing. With llama.cpp the official 16256 costs nothing extra; the ComfyUI backend slows down with it.\n\n**Downloaded automatically** by the loader on first use (the prompt enhancer):\n- **backend llama.cpp**: llama-server (0.7 GB, once) into `models/llama.cpp/`, and the model from [mozophe/Qwen-Image-2.1-PE-MTP-GGUF](https://huggingface.co/mozophe/Qwen-Image-2.1-PE-MTP-GGUF) into `models/LLM/Qwen-Image-2.1-PE/`: Q8_0 9.8 GB or Q4_K_M 6.0 GB.\n- **backend ComfyUI**: the enhancer from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1) (9.5 GB) and the MTP head from [Qwen/Qwen3.5-9B](https://huggingface.co/Qwen/Qwen3.5-9B) (0.5 GB), combined into one 10 GB file in `models/text_encoders/Qwen-Image-2.1-PE/`. The heretic models download 19 GB instead.\n\nOfficial Pixel sizes for each **wh_ratio**:\n\n| wh_ratio | 1 MP | 2K (native) |\n|---|---|---|\n| 1:1 | 1024×1024 | 2048×2048 |\n| 4:3 / 3:4 | 1184×896 | 2400×1792 |\n| 3:2 / 2:3 | 1248×832 | 2528×1696 |\n| 16:9 / 9:16 | 1376×768 | 2752×1536 |\n\nOther ratios: keep about the same pixel count, with both sides multiples of 32.\n\n**Download these yourself** (the image models, from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`"
+        "text": "## Qwen-Image 2.1 text-to-image with the prompt enhancer\n\nWrite a short idea in **Qwen-Image 2.1 Prompt Enhancer (MTP)**. It rewrites it into the detailed prompt Qwen-Image 2.1 was trained on.\n\n**Prompt enhancer backend** (on **Qwen-Image 2.1 PE Loader (MTP)**)\n\n- **llama.cpp** (set here, recommended): NVIDIA GPUs on Windows or Linux. With MTP it generates about 2.0× the tokens per second of the ComfyUI backend without MTP.\n- **quant**: Q8_0 for GPUs with 16 GB or more.\n- **12 GB or less**: set **quant** to Q4_K_M (faster, small quality cost). On 8 GB, also set **kv_cache** to q8_0; that ran with about 7.6 GB of VRAM free in testing. Still out of VRAM? Lower max_length.\n- **unload_model**: keep it on unless your GPU has room for both the enhancer and the image model (24–32 GB or more); off then skips reloading the enhancer, about 6 s per prompt.\n- **Not on an NVIDIA GPU** (AMD, Intel, Mac)? Set **backend** to **ComfyUI**.\n- **max_length** 8192 fits every answer seen in testing. With llama.cpp the official 16256 costs nothing extra; the ComfyUI backend slows down with it.\n\n**System prompt** (optional): type your own into the **System prompt** box to replace the official one. Leave it empty to keep the official prompt.\n\n**Downloaded automatically** by the loader on first use (the prompt enhancer):\n- **backend llama.cpp**: llama-server (0.7 GB, once) into `models/llama.cpp/`, and the model from [mozophe/Qwen-Image-2.1-PE-MTP-GGUF](https://huggingface.co/mozophe/Qwen-Image-2.1-PE-MTP-GGUF) into `models/LLM/Qwen-Image-2.1-PE/`: Q8_0 9.8 GB or Q4_K_M 6.0 GB.\n- **backend ComfyUI**: the enhancer from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1) (9.5 GB) and the MTP head from [Qwen/Qwen3.5-9B](https://huggingface.co/Qwen/Qwen3.5-9B) (0.5 GB), combined into one 10 GB file in `models/text_encoders/Qwen-Image-2.1-PE/`. The heretic models download 19 GB instead.\n\nOfficial Pixel sizes for each **wh_ratio**:\n\n| wh_ratio | 1 MP | 2K (native) |\n|---|---|---|\n| 1:1 | 1024×1024 | 2048×2048 |\n| 4:3 / 3:4 | 1184×896 | 2400×1792 |\n| 3:2 / 2:3 | 1248×832 | 2528×1696 |\n| 16:9 / 9:16 | 1376×768 | 2752×1536 |\n\nOther ratios: keep about the same pixel count, with both sides multiples of 32.\n\n**Download these yourself** (the image models, from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`"
       },
       "color": "#432",
       "bgcolor": "#653"
@@ -740,6 +746,43 @@
       },
       "widgets_values": [],
       "widgets_values_named": {}
+    },
+    {
+      "id": 17,
+      "type": "PrimitiveStringMultiline",
+      "pos": [
+        5.846670312011719,
+        820
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            16
+          ]
+        }
+      ],
+      "title": "System prompt (optional, empty = official)",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "PrimitiveStringMultiline"
+      },
+      "widgets_values": [
+        ""
+      ],
+      "widgets_values_named": {
+        "value": ""
+      }
     }
   ],
   "links": [
@@ -846,6 +889,14 @@
       15,
       0,
       "IMAGE"
+    ],
+    [
+      16,
+      17,
+      0,
+      2,
+      2,
+      "STRING"
     ]
   ],
   "groups": [],

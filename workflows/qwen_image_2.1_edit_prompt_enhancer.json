@@ -1,8 +1,8 @@
 {
   "id": "b1f31f7c-6839-4006-9cc2-0b311d4d82f1",
   "revision": 0,
-  "last_node_id": 22,
-  "last_link_id": 33,
+  "last_node_id": 23,
+  "last_link_id": 34,
   "nodes": [
     {
       "id": 2,
@@ -41,6 +41,12 @@
           "shape": 7,
           "type": "IMAGE",
           "link": null
+        },
+        {
+          "name": "system_prompt",
+          "shape": 7,
+          "type": "STRING",
+          "link": 34
         }
       ],
       "outputs": [
@@ -673,10 +679,10 @@
         }
       },
       "widgets_values": [
-        "## Qwen-Image 2.1 image editing with the prompt enhancer\n\n1. Connect the images to **both** the Prompt Enhancer and **Text Encode Qwen Image 2.1**, in the same order. Refer to them in your instruction as `<image1>`, `<image2>`, ...\n2. The enhancer rewrites the instruction into a precise edit prompt.\n\nExample images from ComfyUI's official template: [portrait_model_denim.png](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/portrait_model_denim.png), [clothing_light_blue_denim_shirt.png](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/clothing_light_blue_denim_shirt.png)\n\n**Prompt enhancer backend** (on **Qwen-Image 2.1 PE Loader (MTP)**)\n\n- **llama.cpp** (set here, recommended): NVIDIA GPUs on Windows or Linux. With MTP it generates about 3.5× the tokens per second of the ComfyUI backend without MTP.\n- **quant**: Q8_0 for GPUs with 16 GB or more.\n- **12 GB or less**: set **quant** to Q4_K_M (faster, small quality cost). On 8 GB, also set **kv_cache** to q8_0; that ran with about 7.6 GB of VRAM free in testing. Still out of VRAM? Lower max_length or use fewer input images.\n- **unload_model**: keep it on unless your GPU has room for both the enhancer and the image model (24–32 GB or more); off then skips reloading the enhancer, about 6 s per prompt.\n- **Not on an NVIDIA GPU** (AMD, Intel, Mac)? Set **backend** to **ComfyUI**.\n- **max_length** 8192 fits every answer seen in testing. With llama.cpp the official 24000 costs nothing extra; the ComfyUI backend slows down with it.\n\n**Downloaded automatically** by the loader on first use (the prompt enhancer):\n- **backend llama.cpp**: llama-server (0.7 GB, once) into `models/llama.cpp/`, and the model from [mozophe/Qwen-Image-2.1-PE-MTP-GGUF](https://huggingface.co/mozophe/Qwen-Image-2.1-PE-MTP-GGUF) into `models/LLM/Qwen-Image-2.1-PE/`: Q8_0 9.8 GB or Q4_K_M 6.0 GB, plus 0.9 GB for the vision part.\n- **backend ComfyUI**: the enhancer from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1) (9.5 GB) and the MTP head from [Qwen/Qwen3.5-9B](https://huggingface.co/Qwen/Qwen3.5-9B) (0.5 GB), combined into one 10 GB file in `models/text_encoders/Qwen-Image-2.1-PE/`. The heretic models download 19 GB instead.\n\n**Download these yourself** (the image models, from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`"
+        "## Qwen-Image 2.1 image editing with the prompt enhancer\n\n1. Connect the images to **both** the Prompt Enhancer and **Text Encode Qwen Image 2.1**, in the same order. Refer to them in your instruction as `<image1>`, `<image2>`, ...\n2. The enhancer rewrites the instruction into a precise edit prompt.\n\nExample images from ComfyUI's official template: [portrait_model_denim.png](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/portrait_model_denim.png), [clothing_light_blue_denim_shirt.png](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/clothing_light_blue_denim_shirt.png)\n\n**Prompt enhancer backend** (on **Qwen-Image 2.1 PE Loader (MTP)**)\n\n- **llama.cpp** (set here, recommended): NVIDIA GPUs on Windows or Linux. With MTP it generates about 3.5× the tokens per second of the ComfyUI backend without MTP.\n- **quant**: Q8_0 for GPUs with 16 GB or more.\n- **12 GB or less**: set **quant** to Q4_K_M (faster, small quality cost). On 8 GB, also set **kv_cache** to q8_0; that ran with about 7.6 GB of VRAM free in testing. Still out of VRAM? Lower max_length or use fewer input images.\n- **unload_model**: keep it on unless your GPU has room for both the enhancer and the image model (24–32 GB or more); off then skips reloading the enhancer, about 6 s per prompt.\n- **Not on an NVIDIA GPU** (AMD, Intel, Mac)? Set **backend** to **ComfyUI**.\n- **max_length** 8192 fits every answer seen in testing. With llama.cpp the official 24000 costs nothing extra; the ComfyUI backend slows down with it.\n\n**System prompt** (optional): type your own into the **System prompt** box to replace the official one. Leave it empty to keep the official prompt.\n\n**Downloaded automatically** by the loader on first use (the prompt enhancer):\n- **backend llama.cpp**: llama-server (0.7 GB, once) into `models/llama.cpp/`, and the model from [mozophe/Qwen-Image-2.1-PE-MTP-GGUF](https://huggingface.co/mozophe/Qwen-Image-2.1-PE-MTP-GGUF) into `models/LLM/Qwen-Image-2.1-PE/`: Q8_0 9.8 GB or Q4_K_M 6.0 GB, plus 0.9 GB for the vision part.\n- **backend ComfyUI**: the enhancer from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1) (9.5 GB) and the MTP head from [Qwen/Qwen3.5-9B](https://huggingface.co/Qwen/Qwen3.5-9B) (0.5 GB), combined into one 10 GB file in `models/text_encoders/Qwen-Image-2.1-PE/`. The heretic models download 19 GB instead.\n\n**Download these yourself** (the image models, from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`"
       ],
       "widgets_values_named": {
-        "text": "## Qwen-Image 2.1 image editing with the prompt enhancer\n\n1. Connect the images to **both** the Prompt Enhancer and **Text Encode Qwen Image 2.1**, in the same order. Refer to them in your instruction as `<image1>`, `<image2>`, ...\n2. The enhancer rewrites the instruction into a precise edit prompt.\n\nExample images from ComfyUI's official template: [portrait_model_denim.png](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/portrait_model_denim.png), [clothing_light_blue_denim_shirt.png](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/clothing_light_blue_denim_shirt.png)\n\n**Prompt enhancer backend** (on **Qwen-Image 2.1 PE Loader (MTP)**)\n\n- **llama.cpp** (set here, recommended): NVIDIA GPUs on Windows or Linux. With MTP it generates about 3.5× the tokens per second of the ComfyUI backend without MTP.\n- **quant**: Q8_0 for GPUs with 16 GB or more.\n- **12 GB or less**: set **quant** to Q4_K_M (faster, small quality cost). On 8 GB, also set **kv_cache** to q8_0; that ran with about 7.6 GB of VRAM free in testing. Still out of VRAM? Lower max_length or use fewer input images.\n- **unload_model**: keep it on unless your GPU has room for both the enhancer and the image model (24–32 GB or more); off then skips reloading the enhancer, about 6 s per prompt.\n- **Not on an NVIDIA GPU** (AMD, Intel, Mac)? Set **backend** to **ComfyUI**.\n- **max_length** 8192 fits every answer seen in testing. With llama.cpp the official 24000 costs nothing extra; the ComfyUI backend slows down with it.\n\n**Downloaded automatically** by the loader on first use (the prompt enhancer):\n- **backend llama.cpp**: llama-server (0.7 GB, once) into `models/llama.cpp/`, and the model from [mozophe/Qwen-Image-2.1-PE-MTP-GGUF](https://huggingface.co/mozophe/Qwen-Image-2.1-PE-MTP-GGUF) into `models/LLM/Qwen-Image-2.1-PE/`: Q8_0 9.8 GB or Q4_K_M 6.0 GB, plus 0.9 GB for the vision part.\n- **backend ComfyUI**: the enhancer from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1) (9.5 GB) and the MTP head from [Qwen/Qwen3.5-9B](https://huggingface.co/Qwen/Qwen3.5-9B) (0.5 GB), combined into one 10 GB file in `models/text_encoders/Qwen-Image-2.1-PE/`. The heretic models download 19 GB instead.\n\n**Download these yourself** (the image models, from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`"
+        "text": "## Qwen-Image 2.1 image editing with the prompt enhancer\n\n1. Connect the images to **both** the Prompt Enhancer and **Text Encode Qwen Image 2.1**, in the same order. Refer to them in your instruction as `<image1>`, `<image2>`, ...\n2. The enhancer rewrites the instruction into a precise edit prompt.\n\nExample images from ComfyUI's official template: [portrait_model_denim.png](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/portrait_model_denim.png), [clothing_light_blue_denim_shirt.png](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/clothing_light_blue_denim_shirt.png)\n\n**Prompt enhancer backend** (on **Qwen-Image 2.1 PE Loader (MTP)**)\n\n- **llama.cpp** (set here, recommended): NVIDIA GPUs on Windows or Linux. With MTP it generates about 3.5× the tokens per second of the ComfyUI backend without MTP.\n- **quant**: Q8_0 for GPUs with 16 GB or more.\n- **12 GB or less**: set **quant** to Q4_K_M (faster, small quality cost). On 8 GB, also set **kv_cache** to q8_0; that ran with about 7.6 GB of VRAM free in testing. Still out of VRAM? Lower max_length or use fewer input images.\n- **unload_model**: keep it on unless your GPU has room for both the enhancer and the image model (24–32 GB or more); off then skips reloading the enhancer, about 6 s per prompt.\n- **Not on an NVIDIA GPU** (AMD, Intel, Mac)? Set **backend** to **ComfyUI**.\n- **max_length** 8192 fits every answer seen in testing. With llama.cpp the official 24000 costs nothing extra; the ComfyUI backend slows down with it.\n\n**System prompt** (optional): type your own into the **System prompt** box to replace the official one. Leave it empty to keep the official prompt.\n\n**Downloaded automatically** by the loader on first use (the prompt enhancer):\n- **backend llama.cpp**: llama-server (0.7 GB, once) into `models/llama.cpp/`, and the model from [mozophe/Qwen-Image-2.1-PE-MTP-GGUF](https://huggingface.co/mozophe/Qwen-Image-2.1-PE-MTP-GGUF) into `models/LLM/Qwen-Image-2.1-PE/`: Q8_0 9.8 GB or Q4_K_M 6.0 GB, plus 0.9 GB for the vision part.\n- **backend ComfyUI**: the enhancer from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1) (9.5 GB) and the MTP head from [Qwen/Qwen3.5-9B](https://huggingface.co/Qwen/Qwen3.5-9B) (0.5 GB), combined into one 10 GB file in `models/text_encoders/Qwen-Image-2.1-PE/`. The heretic models download 19 GB instead.\n\n**Download these yourself** (the image models, from [Comfy-Org/Qwen-Image-2.1](https://huggingface.co/Comfy-Org/Qwen-Image-2.1)):\n- `diffusion_models/qwen_image_2.1_int8_convrot.safetensors`\n- `text_encoders/qwen3vl_8b_int8_convrot.safetensors`\n- `vae/qwen_image_2.1_vae_bf16.safetensors`"
       },
       "color": "#432",
       "bgcolor": "#653"
@@ -924,6 +930,43 @@
         "backend.vision_on_cpu": false,
         "backend.unload_model": true
       }
+    },
+    {
+      "id": 23,
+      "type": "PrimitiveStringMultiline",
+      "pos": [
+        224,
+        784
+      ],
+      "size": [
+        230,
+        420
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            34
+          ]
+        }
+      ],
+      "title": "System prompt (optional, empty = official)",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "PrimitiveStringMultiline"
+      },
+      "widgets_values": [
+        ""
+      ],
+      "widgets_values_named": {
+        "value": ""
+      }
     }
   ],
   "links": [
@@ -1086,6 +1129,14 @@
       2,
       0,
       "CLIP"
+    ],
+    [
+      34,
+      23,
+      0,
+      2,
+      4,
+      "STRING"
     ]
   ],
   "groups": [],

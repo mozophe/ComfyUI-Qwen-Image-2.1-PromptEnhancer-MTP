@@ -322,6 +322,7 @@ This extension depends on parts of ComfyUI that can change between versions. Ple
 
 ## Changelog
 
+- **1.3.1** (2026-10-11): the sample workflows include an empty system prompt box wired to the enhancer; type into it to replace the official prompt. No code changes.
 - **1.3.0** (2026-10-11): optional system_prompt input on the enhancer node, as on ComfyUI's Generate Text: connect a string to replace the preset's official system prompt.
 - **1.2.2** (2026-10-01): sample t2i and edit workflows for the ComfyUI backend, linked from the quick start. No code changes.
 - **1.2.1** (2026-10-01): updated README and registry description. No code changes.
