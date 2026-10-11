@@ -191,6 +191,7 @@ ComfyUI's **Generate Text** node with the official PE presets built in.
 | preset | Qwen-Image 2.1 PE (t2i), Qwen-Image 2.1 PE (i2i), or none to use it as a plain Generate Text node |
 | seed | Change it for a different result |
 | mtp | auto (recommended), off, or a fixed draft depth |
+| system_prompt | Optional: connect a string to replace the preset's official system prompt. If the answer then has no JSON `rewritten_prompt`, positive_prompt is the whole answer |
 
 | Output | Description |
 |---|---|
@@ -321,6 +322,7 @@ This extension depends on parts of ComfyUI that can change between versions. Ple
 
 ## Changelog
 
+- **1.3.0** (2026-10-11): optional system_prompt input on the enhancer node, as on ComfyUI's Generate Text: connect a string to replace the preset's official system prompt.
 - **1.2.2** (2026-10-01): sample t2i and edit workflows for the ComfyUI backend, linked from the quick start. No code changes.
 - **1.2.1** (2026-10-01): updated README and registry description. No code changes.
 - **1.2.0** (2026-09-30): llama.cpp backend, recommended on NVIDIA GPUs.

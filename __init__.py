@@ -55,7 +55,9 @@ class TextGenerateQwen35MTP(TextGenerate):
                     # every rebuild, so saved widget values shift on reload
                     io.Int.Input("seed", default=42, min=0, max=0xffffffffffffffff, control_after_generate=io.ControlAfterGenerate.fixed,
                                  tooltip="Sampling seed for the PE presets. The 'none' preset uses its own seed."),
-                    inp["mtp"]],
+                    inp["mtp"],
+                    # core's own input; absent on ComfyUI versions from before Generate Text had it
+                    *([inp["system_prompt"]] if "system_prompt" in inp else [])],
             # the official prompt_rewrite output record's answer fields
             outputs=[io.String.Output("positive_prompt", display_name="positive_prompt", tooltip="The rewritten prompt from the answer's JSON, for the text encoder. The whole answer if it has none."),
                      io.String.Output("negative_prompt", display_name="negative_prompt", tooltip="Always empty: neither PE model writes one. Kept for workflows that expect the slot."),
@@ -66,11 +68,11 @@ class TextGenerateQwen35MTP(TextGenerate):
         )
 
     @classmethod
-    def execute(cls, clip, prompt, preset, seed=42, images=None, mtp="auto") -> io.NodeOutput:
+    def execute(cls, clip, prompt, preset, seed=42, images=None, mtp="auto", system_prompt="") -> io.NodeOutput:
         # connected inputs in socket order, each batch split into single images
         images = [im[i:i + 1] for _, im in sorted((images or {}).items(), key=lambda kv: int(kv[0].rsplit("_", 1)[1])) if im is not None
                   for i in range(im.shape[0])]
-        text = cls.generate_text(clip if isinstance(clip, LlamaPE) else MTPClip(clip), prompt, preset, seed, images, mtp)
+        text = cls.generate_text(clip if isinstance(clip, LlamaPE) else MTPClip(clip), prompt, preset, seed, images, mtp, system_prompt)
         thinking, answer = split_thinking(text)
         parsed = parse_answer(answer)
         if parsed is None:
@@ -81,7 +83,7 @@ class TextGenerateQwen35MTP(TextGenerate):
         return io.NodeOutput(positive, "", thinking, wh_ratio, ratio_follow, parsed is not None)
 
     @classmethod
-    def generate_text(cls, clip, prompt, preset, seed, images, mtp):
+    def generate_text(cls, clip, prompt, preset, seed, images, mtp, system=""):
         name = preset["preset"]
         if name == "none":
             if isinstance(clip, LlamaPE):
@@ -90,7 +92,7 @@ class TextGenerateQwen35MTP(TextGenerate):
                 raise ValueError("The 'none' preset takes images of one size; use a PE preset for differently sized images.")
             return super().execute(clip, prompt, preset["max_length"], preset["sampling_mode"], image=torch.cat(images) if images else None,
                                    thinking=preset.get("thinking", False), use_default_template=preset.get("use_default_template", True),
-                                   mtp=mtp).args[0]
+                                   mtp=mtp, **({"system_prompt": system} if system else {})).args[0]
 
         task = PRESETS[name]["task"]
         loaded = getattr(clip, "pe_task", None)  # set by our loader; absent on CLIPs from other loaders
@@ -103,10 +105,11 @@ class TextGenerateQwen35MTP(TextGenerate):
             raise ValueError(f"{name} needs at least one image.")
         if not preset["thinking"]:
             logging.warning(f"{name}: thinking is off; the PE models were trained with thinking on and degrade without it.")
+        system = (system or "").strip() or system_prompt(task)  # a connected system_prompt replaces the official one
         if isinstance(clip, LlamaPE):
             # the server inserts each image itself: the prompt gets no image blocks, generate() adds its media markers
-            return llama_generate(clip, pe_prompt(system_prompt(task), prompt, 0, preset["thinking"]), images, preset, seed, mtp)
-        text =pe_prompt(system_prompt(task), prompt, len(images), preset["thinking"])
+            return llama_generate(clip, pe_prompt(system, prompt, 0, preset["thinking"]), images, preset, seed, mtp)
+        text =pe_prompt(system, prompt, len(images), preset["thinking"])
         tokens = clip.tokenize(text, images=[fit_image(im) for im in images], min_length=1)
         ids = clip.generate(tokens, do_sample=True, max_length=preset["max_length"], temperature=preset["temperature"], top_k=preset["top_k"],
                             top_p=preset["top_p"], min_p=preset["min_p"], repetition_penalty=preset["repetition_penalty"], seed=seed,
