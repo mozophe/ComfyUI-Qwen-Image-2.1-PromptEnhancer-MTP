@@ -190,7 +190,7 @@ ComfyUI's **Generate Text** node with the official PE presets built in.
 | image_1 … image_10 | Input images for editing, referred to as &lt;image1&gt;, &lt;image2&gt;… |
 | preset | Qwen-Image 2.1 PE (t2i), Qwen-Image 2.1 PE (i2i), or none to use it as a plain Generate Text node |
 | seed | Change it for a different result |
-| mtp | auto (recommended), off, or a fixed draft depth |
+| mtp | auto (recommended), off, or a fixed draft depth (2–5). On ComfyUI 0.43.0 and newer it also lists tree modes (tree2s1 …), which draft several alternatives at once; they work on the ComfyUI backend only, and llama.cpp stops with an error |
 | system_prompt | Optional: connect a string to replace the preset's official system prompt. If the answer then has no JSON `rewritten_prompt`, positive_prompt is the whole answer |
 
 | Output | Description |
