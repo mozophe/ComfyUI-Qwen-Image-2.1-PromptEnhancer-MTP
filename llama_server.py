@@ -55,6 +55,8 @@ def context_size(prompt_tokens, max_length):
 def mtp_args(mtp):
     if mtp == "off":
         return []
+    if mtp != "auto" and not mtp.isdigit():
+        raise ValueError(f"mtp {mtp}: tree modes are ComfyUI backend only; llama.cpp takes auto, off or a depth 2-5.")
     return ["--spec-type", "draft-mtp"] + ([] if mtp == "auto" else ["--spec-draft-n-max", str(int(mtp))])
 
 

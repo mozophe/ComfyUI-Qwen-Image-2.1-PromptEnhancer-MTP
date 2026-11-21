@@ -29,4 +29,16 @@ assert freed == [("cuda:0", [pe_entry], {})], freed  # for_dynamic stays False, 
 records.clear()
 MTPClip(clip).generate({"q": [[(1,)]]}, mtp=False)
 assert not records  # mtp off: nothing to warn about
+
+# ComfyUI >= 0.43.0 core takes mode keys and handles image MRoPE under MTP itself (issue #1)
+import mtp as m
+assert m.mtp_arg("off") is False and m.mtp_arg("auto") is True
+if not m.LEGACY_MTP:
+    assert m.mtp_arg("3") == "3" and m.mtp_arg("tree2s1") == "tree2s1"
+    object.__setattr__(transformer, "mtp", object())  # MTP head present
+    calls.clear()
+    MTPClip(clip).generate({"q": [[({"type": "image"},)]]}, mtp="3", max_length=4)
+    assert calls == [{"mtp": "3", "max_length": 4}]  # image prompt goes to core, not the legacy path
+else:
+    assert m.mtp_arg("3") == 3
 print("ok")

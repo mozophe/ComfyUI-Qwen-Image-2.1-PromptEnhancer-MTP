@@ -19,6 +19,11 @@ assert context_size(4550 + 2052, 8192) == 16384 and context_size(1, 1) == 4096 a
 
 assert mtp_args("off") == [] and mtp_args("auto") == ["--spec-type", "draft-mtp"]
 assert mtp_args("4") == ["--spec-type", "draft-mtp", "--spec-draft-n-max", "4"]
+try:
+    mtp_args("tree2s1")
+    raise AssertionError("tree mode accepted")
+except ValueError as e:
+    assert "ComfyUI backend only" in str(e)
 
 t2i = LlamaPE("t2i", "t.gguf", None, "Q8_0", "f16", "srv.exe")
 cmd = server_command(t2i, 12288, "auto", "dio", 8123)

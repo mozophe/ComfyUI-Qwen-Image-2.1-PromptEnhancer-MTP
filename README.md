@@ -322,6 +322,7 @@ This extension depends on parts of ComfyUI that can change between versions. Ple
 
 ## Changelog
 
+- **1.3.3** (2026-11-21): works with ComfyUI 0.43.0 and newer, whose MTP rewrite broke i2i with images and fixed MTP depths ([#1](https://github.com/mozophe/ComfyUI-Qwen-Image-2.1-PromptEnhancer-MTP/issues/1)). On those versions ComfyUI handles image prompts under MTP itself, and the new tree modes work on the ComfyUI backend; on llama.cpp they give a clear error.
 - **1.3.2** (2026-10-11): the system prompt box in the sample workflows moved under the note, next to the enhancer's system_prompt input. No code changes.
 - **1.3.1** (2026-10-11): the sample workflows include an empty system prompt box wired to the enhancer; type into it to replace the official prompt. No code changes.
 - **1.3.0** (2026-10-11): optional system_prompt input on the enhancer node, as on ComfyUI's Generate Text: connect a string to replace the preset's official system prompt.

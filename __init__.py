@@ -5,7 +5,7 @@ import folder_paths
 import comfy.sd
 from comfy_api.latest import ComfyExtension, io
 from comfy_extras.nodes_textgen import TextGenerate
-from .mtp import MTPClip, pe_prompt, split_thinking
+from .mtp import MTPClip, mtp_arg, pe_prompt, split_thinking
 from .pe import PE, ensure_model, fit_image, parse_answer, system_prompt
 from .llama_setup import KV_CACHE, QUANTS, LlamaPE, load_llama
 from .llama_server import generate as llama_generate
@@ -113,7 +113,7 @@ class TextGenerateQwen35MTP(TextGenerate):
         tokens = clip.tokenize(text, images=[fit_image(im) for im in images], min_length=1)
         ids = clip.generate(tokens, do_sample=True, max_length=preset["max_length"], temperature=preset["temperature"], top_k=preset["top_k"],
                             top_p=preset["top_p"], min_p=preset["min_p"], repetition_penalty=preset["repetition_penalty"], seed=seed,
-                            presence_penalty=preset["presence_penalty"], mtp=False if mtp == "off" else (True if mtp == "auto" else int(mtp)))
+                            presence_penalty=preset["presence_penalty"], mtp=mtp_arg(mtp))
         return clip.decode(ids)
 
 

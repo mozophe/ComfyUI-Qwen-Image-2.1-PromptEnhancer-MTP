@@ -1,9 +1,21 @@
+import inspect
 import logging
 import torch
 import comfy.model_management
 import comfy.ops
 from comfy.text_encoders.qwen35 import Qwen35
 from comfy.text_encoders.qwen_vl import qwen2vl_mrope_position_ids
+
+# ComfyUI >= 0.43.0 (adaptive tree MTP): _generate_mtp takes a mode key and MRoPE position_ids itself,
+# so image prompts need no workaround; older cores take fixed_depth and ignore MRoPE under MTP
+LEGACY_MTP = "fixed_depth" in inspect.signature(Qwen35._generate_mtp).parameters
+
+
+def mtp_arg(mtp):
+    # the node's mtp combo value -> what core generate takes: False, True (auto), a mode key, or an int depth on old cores
+    if mtp in ("off", "auto"):
+        return mtp == "auto"
+    return int(mtp) if LEGACY_MTP else mtp
 
 
 def pe_prompt(system_prompt, text, images, thinking):
@@ -98,6 +110,6 @@ class MTPClip:
             logging.warning("mtp is on but this Qwen3.5 checkpoint has no MTP head, so it runs without MTP (slower). "
                             "For Qwen-Image 2.1 PE, load it with the 'Qwen-Image 2.1 PE Loader (MTP)' node.")
             inner = None
-        if inner is None or not has_image(tokens):
+        if inner is None or not LEGACY_MTP or not has_image(tokens):
             return self.clip.generate(tokens, mtp=mtp, **kwargs)
         return generate_image_mtp(self.clip, inner, tokens, mtp=mtp, **kwargs)
